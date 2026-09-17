@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>👑 King of Sorrow's Filter Tester</title>
+<link rel="icon" href="assets/king-of-sorrow.png" />
+<style>
+:root{
+--bg:#0f1019;--surface:#1a1c2b;--surface-hover:#232540;--border:#2c2e42;
+--text:#f2f2f7;--muted:#9a9ab0;--accent:#7c5cff;--accent-hover:#9375ff;
+--ok:#6ee787;--bad:#ff7b72;--warn:#ffd866;--info:#79c0ff;--radius:12px;
+--sorrow:#8b2c2c;--sorrow-glow:#ff4444;
+}
+body.mood-sorrow{
+--bg:#0a0a0f;--surface:#14141c;--surface-hover:#1c1c28;--border:#2a1a1a;
+--accent:#8b2c2c;--accent-hover:#a83c3c;--muted:#6a6a7a;
+}
+*{box-sizing:border-box}
+body{
+margin:0;padding:20px;background:var(--bg);color:var(--text);
+font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;
+transition:background 0.8s ease,color 0.8s ease;
+min-height:100vh;
+}
+h1{margin:0 0 4px;font-size:1.6rem;display:flex;align-items:center;gap:10px}
+h1 img{width:48px;height:48px;border-radius:50%;border:2px solid var(--accent);object-fit:cover}
+.subtitle{color:var(--muted);font-size:0.9rem;margin:4px 0 20px;font-style:italic}
+.mood-toggle{
+position:fixed;top:20px;right:20px;background:var(--surface);
+border:1px solid var(--border);color:var(--text);padding:8px 14px;
+border-radius:var(--radius);cursor:pointer;font-size:12px;font-family:inherit;
+z-index:100;
+}
+.mood-toggle:hover{border-color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:20px 0}
+.card{
+background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+padding:20px;text-decoration:none;color:var(--text);transition:all 0.2s ease;
+display:block;position:relative;overflow:hidden;
+}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 20px rgba(124,92,255,0.15)}
+.card .emoji{font-size:2rem;display:block;margin-bottom:8px}
+.card h2{margin:0 0 6px;font-size:1.05rem;color:var(--text)}
+.card p{margin:0;color:var(--muted);font-size:0.82rem;line-height:1.5}
+.card .badge{
+position:absolute;top:14px;right:14px;font-size:10px;padding:3px 8px;
+border-radius:20px;background:var(--accent);color:white;font-weight:bold;
+}
+.card .badge.sorrow{background:var(--sorrow)}
+.footer{
+margin-top:40px;padding:16px;background:var(--surface);border-left:3px solid var(--accent);
+border-radius:6px;font-size:0.78rem;color:var(--muted);line-height:1.6;
+}
+.footer a{color:var(--info);text-decoration:none}
+.footer a:hover{text-decoration:underline}
+.quote{
+font-style:italic;color:var(--muted);margin:20px 0;padding:14px 18px;
+border-left:3px solid var(--sorrow);background:rgba(139,44,44,0.08);
+border-radius:0 8px 8px 0;font-size:0.85rem;
+}
+.quote .author{display:block;margin-top:6px;font-size:0.78rem;color:var(--muted);font-style:normal}
+body.mood-sorrow h1{color:#ff8888}
+body.mood-sorrow .quote{border-left-color:var(--sorrow-glow);background:rgba(255,68,68,0.06)}
+@media(max-width:600px){h1{font-size:1.2rem}h1 img{width:36px;height:36px}}
+</style>
+</head>
+<body>
+
+<button class="mood-toggle" id="moodToggle">🌧️ Mood: Sorrow</button>
+
+<h1>
+<img src="assets/king-of-sorrow.png" alt="King of Sorrow" onerror="this.style.display='none'" />
+👑 King of Sorrow's Filter Tester
+</h1>
+<p class="subtitle">Inappropriate Recycling v1 — by interloper-mym</p>
+
+<div class="quote">
+"Why... Why do you... hate sorrow? Can't you... Can't you accept sorrow at all...? Is there no place for me, in this world?!"
+<span class="author">— King of Sorrow, Klonoa 2: Lunatea's Veil</span>
+</div>
+
+<div class="grid">
+<a class="card" href="matrix.html">
+<span class="emoji">🧪</span>
+<h2>Filter Matrix</h2>
+<p>Query every major school filter against a single domain. Produces the emoji table: filter, category, verdict.</p>
+</a>
+
+<a class="card" href="securly.html">
+<span class="emoji">🩺</span>
+<h2>Securly Autopsy</h2>
+<p>Decode Securly block URLs, enumerate endpoints, emulate verdicts, analyze tokens.</p>
+</a>
+
+<a class="card" href="proxy.html">
+<span class="emoji">🔍</span>
+<h2>Proxy Fingerprint</h2>
+<p>Match any URL against the 50-proxy detection database. Identify cloaked proxies and evasion gaps.</p>
+</a>
+
+<a class="card" href="simulator.html">
+<span class="emoji">🎛️</span>
+<h2>Simulator</h2>
+<p>Local-only heuristic. Predicts category and block verdict without making a single network call.</p>
+</a>
+
+<a class="card" href="reference.html">
+<span class="emoji">📚</span>
+<h2>Reference Tables</h2>
+<p>Full category taxonomies for Securly, FortiGuard, GoGuardian, Lightspeed, Blocksi, and more.</p>
+</a>
+
+<a class="card" href="https://github.com/interloper-mym/KING-O-SORROW-S-FILTER-TESTER" target="_blank" rel="noopener">
+<span class="emoji">📦</span>
+<h2>GitHub Repo</h2>
+<p>Source code, issues, and updates. Fork it, host your own copy, or contribute.</p>
+</a>
+</div>
+
+<div class="footer">
+<strong>👑 King of Sorrow's Filter Tester</strong> — Inappropriate Recycling v1<br>
+Built by <strong>interloper-mym</strong> · Discord: <a href="https://discord.gg/gnndNWXZtC" target="_blank" rel="noopener">gnndNWXZtC</a><br>
+Character: <a href="https://klonoa.fandom.com/wiki/King_of_Sorrow" target="_blank" rel="noopener">King of Sorrow — Klonoa Wiki</a> · Klonoa © Bandai Namco<br>
+<br>
+<em>Observation-only. No popups. No history pollution. All probes are public-URL fetches. No credentials, no tokens, no impersonation.</em>
+</div>
+
+<script>
+/* Mood toggle — shifts the UI palette based on how you feel */
+const toggle=document.getElementById("moodToggle");
+const body=document.body;
+
+function setMood(sorrow){
+if(sorrow){
+body.classList.add("mood-sorrow");
+toggle.textContent="☀️ Mood: Not Sorrow";
+localStorage.setItem("kos_mood","sorrow");
+}else{
+body.classList.remove("mood-sorrow");
+toggle.textContent="🌧️ Mood: Sorrow";
+localStorage.setItem("kos_mood","normal");
+}
+}
+
+toggle.addEventListener("click",()=>{
+setMood(!body.classList.contains("mood-sorrow"));
+});
+
+/* Restore mood from last visit */
+const savedMood=localStorage.getItem("kos_mood");
+if(savedMood==="sorrow")setMood(true);else setMood(false);
+</script>
+</body>
+</html>
