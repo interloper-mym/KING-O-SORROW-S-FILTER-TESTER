@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🧪 Filter Matrix — King of Sorrow's Filter Tester</title>
+<link rel="icon" href="assets/king-of-sorrow.png" />
+<style>
+:root{
+  --bg:#0f1019;--surface:#1a1c2b;--surface-hover:#232540;--border:#2c2e42;
+  --text:#f2f2f7;--muted:#9a9ab0;--accent:#7c5cff;--accent-hover:#9375ff;
+  --ok:#6ee787;--bad:#ff7b72;--warn:#ffd866;--info:#79c0ff;--radius:12px;
+  --sorrow:#8b2c2c;--sorrow-glow:#ff4444;
+}
+body.mood-sorrow{
+  --bg:#0a0a0f;--surface:#14141c;--surface-hover:#1c1c28;--border:#2a1a1a;
+  --accent:#8b2c2c;--accent-hover:#a83c3c;--muted:#6a6a7a;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:20px;background:var(--bg);color:var(--text);
+  font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;
+  transition:background 0.8s ease,color 0.8s ease;min-height:100vh;
+}
+a.back{
+  color:var(--info);text-decoration:none;font-size:0.9rem;display:inline-block;
+  margin-bottom:12px;
+}
+a.back:hover{text-decoration:underline}
+h1{margin:0 0 4px;font-size:1.5rem;display:flex;align-items:center;gap:10px}
+h1 img{width:40px;height:40px;border-radius:50%;border:2px solid var(--accent);object-fit:cover}
+.subtitle{color:var(--muted);font-size:0.85rem;margin:4px 0 20px;font-style:italic}
+.panel{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;margin-bottom:16px;
+}
+input[type=text]{
+  width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:12px 14px;border-radius:var(--radius);
+  font-family:"Courier New",monospace;font-size:14px;
+}
+input[type=text]:focus{outline:none;border-color:var(--accent)}
+.btnrow{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap;align-items:center}
+button{
+  background:var(--surface);border:1px solid var(--border);color:var(--text);
+  padding:10px 18px;border-radius:var(--radius);cursor:pointer;font-size:13px;
+  font-family:inherit;
+}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:0.5;cursor:wait}
+button.primary{background:var(--accent);border-color:var(--accent);color:white}
+button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.status{
+  padding:10px 14px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);margin:10px 0;min-height:2.4em;
+  font-family:"Courier New",monospace;font-size:12px;color:var(--muted);
+}
+.status.working{color:var(--warn);border-color:var(--warn)}
+.status.ok{color:var(--ok);border-color:var(--ok)}
+.status.bad{color:var(--bad);border-color:var(--bad)}
+#matrixOut{
+  background:#000;border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;font-family:"Courier New",monospace;font-size:13px;line-height:1.7;
+  min-height:200px;overflow-x:auto;
+}
+.matrix-header{color:var(--muted);margin-bottom:8px}
+.matrix-row{display:flex;gap:10px;align-items:baseline;padding:2px 0}
+.matrix-emoji{width:24px;display:inline-block}
+.matrix-label{min-width:140px;display:inline-block}
+.matrix-cat{color:var(--muted);flex:1}
+.matrix-icon{white-space:nowrap}
+.matrix-row.ok .matrix-icon{color:var(--ok)}
+.matrix-row.bad .matrix-icon{color:var(--bad)}
+.matrix-row.warn .matrix-icon{color:var(--warn)}
+.matrix-row.unknown .matrix-icon{color:var(--muted)}
+hr{border:0;border-top:1px solid var(--border);margin:10px 0}
+.footer-note{
+  margin-top:20px;padding:12px;background:var(--surface);border-left:3px solid var(--accent);
+  border-radius:4px;font-size:0.78rem;color:var(--muted);line-height:1.5;
+}
+.footer-note a{color:var(--info);text-decoration:none}
+.footer-note a:hover{text-decoration:underline}
+.settings{
+  margin-top:12px;padding:12px;background:var(--bg);border:1px dashed var(--border);
+  border-radius:8px;font-size:0.8rem;color:var(--muted);
+}
+.settings input{font-size:12px;padding:6px 10px;margin-top:6px}
+</style>
+</head>
+<body>
+
+<a class="back" href="index.html">← back to hub</a>
+
+<h1>
+  <img src="assets/king-of-sorrow.png" alt="" onerror="this.style.display='none'" />
+  🧪 Filter Matrix
+</h1>
+<p class="subtitle">King of Sorrow's Filter Tester — Inappropriate Recycling v1 — by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)</p>
+
+<div class="panel">
+  <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Domain to test:</label>
+  <input type="text" id="domainInput" placeholder="unpkg.com" autocomplete="off" />
+  <div class="btnrow">
+    <button class="primary" id="runBtn">RUN MATRIX</button>
+    <button id="copyBtn" disabled>COPY MATRIX</button>
+    <button id="clearBtn">CLEAR</button>
+  </div>
+  <div class="status" id="status">Ready. Enter a domain and click RUN MATRIX.</div>
+</div>
+
+<div id="matrixOut">No results yet.</div>
+
+<div class="settings">
+  <div><strong>Server URL:</strong> <span id="serverUrlDisplay">…</span></div>
+  <input type="text" id="serverUrlInput" placeholder="https://kos-filter-server.onrender.com" />
+  <div class="btnrow" style="margin:8px 0 0;">
+    <button id="saveServerBtn">SAVE URL</button>
+    <button id="resetServerBtn">RESET TO DEFAULT</button>
+    <button id="healthBtn">CHECK HEALTH</button>
+  </div>
+</div>
+
+<div class="footer-note">
+  <strong>🐾 King of Sorrow's Filter Tester</strong> — Inappropriate Recycling v1<br>
+  by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)<br>
+  Discord: <a href="https://discord.gg/gnndNWXZtC" target="_blank" rel="noopener">gnndNWXZtC</a>
+  · Repo: <a href="https://github.com/interloper-mym/KING-O-SORROW-S-FILTER-TESTER" target="_blank" rel="noopener">KING-O-SORROW-S-FILTER-TESTER</a><br>
+  <br>
+  <em>Observation-only. No popups. No history pollution. The server at /check runs every filter in parallel and returns their public category. Your school may differ.</em>
+</div>
+
+<script src="js/shared.js"></script>
+<script src="js/api.js"></script>
+<script src="js/render.js"></script>
+<script>
+(function() {
+  const domainInput       = document.getElementById("domainInput");
+  const runBtn            = document.getElementById("runBtn");
+  const copyBtn           = document.getElementById("copyBtn");
+  const clearBtn          = document.getElementById("clearBtn");
+  const statusEl          = document.getElementById("status");
+  const matrixOut         = document.getElementById("matrixOut");
+  const serverUrlDisplay  = document.getElementById("serverUrlDisplay");
+  const serverUrlInput    = document.getElementById("serverUrlInput");
+  const saveServerBtn     = document.getElementById("saveServerBtn");
+  const resetServerBtn    = document.getElementById("resetServerBtn");
+  const healthBtn         = document.getElementById("healthBtn");
+
+  let lastMatrixText = "";
+
+  /* ---------- SERVER URL PANEL ---------- */
+  function refreshServerUrlDisplay() {
+    serverUrlDisplay.textContent = KOS_API.getServerUrl();
+    serverUrlInput.value = KOS_API.getServerUrl();
+  }
+  refreshServerUrlDisplay();
+
+  saveServerBtn.addEventListener("click", () => {
+    const url = serverUrlInput.value.trim();
+    if (!url) { KOS.setStatus(statusEl, "Enter a URL first.", "bad"); return; }
+    if (KOS_API.setServerUrl(url)) {
+      refreshServerUrlDisplay();
+      KOS.setStatus(statusEl, "Server URL saved: " + KOS_API.getServerUrl(), "ok");
+    } else {
+      KOS.setStatus(statusEl, "Failed to save URL.", "bad");
+    }
+  });
+
+  resetServerBtn.addEventListener("click", () => {
+    KOS_API.resetServerUrl();
+    refreshServerUrlDisplay();
+    KOS.setStatus(statusEl, "Reset to default: " + KOS_API.DEFAULT_SERVER_URL, "ok");
+  });
+
+  healthBtn.addEventListener("click", async () => {
+    KOS.setStatus(statusEl, "Pinging " + KOS_API.getServerUrl() + "/health …", "working");
+    const h = await KOS_API.checkServerHealth(30000);
+    if (!h.ok) {
+      KOS.setStatus(statusEl, "Server offline: " + h.error + " (" + h.elapsedMs + "ms)", "bad");
+      return;
+    }
+    const loaded = (h.data && h.data.filters_loaded) ? h.data.filters_loaded.length : "?";
+    const missing = (h.data && h.data.filters_missing) ? h.data.filters_missing.length : "?";
+    KOS.setStatus(
+      statusEl,
+      "Server OK — " + loaded + " filters loaded, " + missing + " missing (" + h.elapsedMs + "ms)",
+      "ok"
+    );
+  });
+
+  /* ---------- RUN MATRIX ---------- */
+  async function runMatrix() {
+    const domain = domainInput.value.trim();
+    if (!domain) {
+      KOS.setStatus(statusEl, "Enter a domain first.", "bad");
+      return;
+    }
+
+    runBtn.disabled = true;
+    copyBtn.disabled = true;
+    matrixOut.innerHTML = '<div class="muted">Contacting ' + KOS.escapeHtml(KOS_API.getServerUrl()) + ' …</div>';
+    KOS.setStatus(statusEl, "Running every filter for " + domain + " …", "working");
+
+    const res = await KOS_API.runFilters(domain, null, 90000);
+
+    if (!res.ok) {
+      matrixOut.innerHTML = '<div class="bad">Server error: ' + KOS.escapeHtml(res.error) + '</div>';
+      KOS.setStatus(statusEl, "Failed: " + res.error + " (" + res.elapsedMs + "ms)", "bad");
+      runBtn.disabled = false;
+      return;
+    }
+
+    lastMatrixText = KOS_RENDER.renderFilterMatrix(res.data);
+    matrixOut.innerHTML = KOS_RENDER.renderFilterMatrixHTML(res.data);
+
+    const count = Object.keys(res.data.results || {}).length;
+    KOS.setStatus(
+      statusEl,
+      "Done — " + count + " filters returned in " + res.elapsedMs + "ms",
+      "ok"
+    );
+
+    runBtn.disabled = false;
+    copyBtn.disabled = false;
+  }
+
+  runBtn.addEventListener("click", runMatrix);
+
+  domainInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !runBtn.disabled) runMatrix();
+  });
+
+  /* ---------- COPY / CLEAR ---------- */
+  copyBtn.addEventListener("click", () => {
+    if (!lastMatrixText) return;
+    KOS.copyToClipboard(lastMatrixText, copyBtn);
+  });
+
+  clearBtn.addEventListener("click", () => {
+    domainInput.value = "";
+    matrixOut.innerHTML = "No results yet.";
+    lastMatrixText = "";
+    copyBtn.disabled = true;
+    KOS.setStatus(statusEl, "Ready. Enter a domain and click RUN MATRIX.", "muted");
+  });
+
+  /* ---------- MOOD ---------- */
+  const mood = KOS.getMood();
+  if (mood === "sorrow") document.body.classList.add("mood-sorrow");
+
+  /* ---------- PRE-WARM MANIFEST ---------- */
+  KOS.loadManifest().catch(() => {});
+})();
+</script>
+</body>
+</html>
