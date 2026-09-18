@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🩺 Securly Autopsy — King of Sorrow's Filter Tester</title>
+<link rel="icon" href="assets/king-of-sorrow.png" />
+<style>
+:root{
+  --bg:#0f1019;--surface:#1a1c2b;--surface-hover:#232540;--border:#2c2e42;
+  --text:#f2f2f7;--muted:#9a9ab0;--accent:#7c5cff;--accent-hover:#9375ff;
+  --ok:#6ee787;--bad:#ff7b72;--warn:#ffd866;--info:#79c0ff;--radius:12px;
+  --sorrow:#8b2c2c;--sorrow-glow:#ff4444;
+}
+body.mood-sorrow{
+  --bg:#0a0a0f;--surface:#14141c;--surface-hover:#1c1c28;--border:#2a1a1a;
+  --accent:#8b2c2c;--accent-hover:#a83c3c;--muted:#6a6a7a;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:20px;background:var(--bg);color:var(--text);
+  font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;
+  transition:background 0.8s ease,color 0.8s ease;min-height:100vh;
+}
+a.back{color:var(--info);text-decoration:none;font-size:0.9rem;display:inline-block;margin-bottom:12px}
+a.back:hover{text-decoration:underline}
+h1{margin:0 0 4px;font-size:1.5rem;display:flex;align-items:center;gap:10px}
+h1 img{width:40px;height:40px;border-radius:50%;border:2px solid var(--accent);object-fit:cover}
+h2{margin:24px 0 10px;font-size:0.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em}
+.subtitle{color:var(--muted);font-size:0.85rem;margin:4px 0 20px;font-style:italic}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+textarea,input[type=text]{
+  width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:12px 14px;border-radius:var(--radius);
+  font-family:"Courier New",monospace;font-size:13px;
+}
+textarea{min-height:100px;resize:vertical}
+textarea:focus,input[type=text]:focus{outline:none;border-color:var(--accent)}
+.btnrow{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap;align-items:center}
+button{
+  background:var(--surface);border:1px solid var(--border);color:var(--text);
+  padding:10px 18px;border-radius:var(--radius);cursor:pointer;font-size:13px;font-family:inherit;
+}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:0.5;cursor:wait}
+button.primary{background:var(--accent);border-color:var(--accent);color:white}
+button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.status{padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:10px 0;min-height:2.4em;font-family:"Courier New",monospace;font-size:12px;color:var(--muted)}
+.status.working{color:var(--warn);border-color:var(--warn)}
+.status.ok{color:var(--ok);border-color:var(--ok)}
+.status.bad{color:var(--bad);border-color:var(--bad)}
+.output{background:#000;border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-family:"Courier New",monospace;font-size:12px;line-height:1.6;min-height:100px;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.info{color:var(--info)}.muted{color:var(--muted)}
+.footer-note{margin-top:20px;padding:12px;background:var(--surface);border-left:3px solid var(--accent);border-radius:4px;font-size:0.78rem;color:var(--muted);line-height:1.5}
+.footer-note a{color:var(--info);text-decoration:none}
+.footer-note a:hover{text-decoration:underline}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<a class="back" href="index.html">← back to hub</a>
+
+<h1>
+  <img src="assets/king-of-sorrow.png" alt="" onerror="this.style.display='none'" />
+  🩺 Securly Autopsy
+</h1>
+<p class="subtitle">King of Sorrow's Filter Tester — Inappropriate Recycling v1 — by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)</p>
+
+<!-- ===================== REDIRECT DECODER ===================== -->
+<h2>Redirect Decoder</h2>
+<div class="panel">
+  <p class="muted" style="margin:0 0 10px;font-size:0.85rem;">
+    Paste a Securly block URL of the form<br>
+    <code>https://www-4.geo.uswest2.v1api.securly.com/geo?url=&lt;base64&gt;&amp;redirectionToken=&lt;token&gt;</code>
+  </p>
+  <textarea id="decoderInput" placeholder="Paste a Securly block URL here…"></textarea>
+  <div class="btnrow">
+    <button class="primary" id="decodeBtn">DECODE REDIRECT</button>
+    <button id="clearDecoderBtn">CLEAR</button>
+  </div>
+  <div class="status" id="decoderStatus">Ready.</div>
+  <div class="output" id="decoderOut"></div>
+</div>
+
+<!-- ===================== ENDPOINT ENUMERATOR ===================== -->
+<h2>Endpoint Enumerator</h2>
+<div class="panel">
+  <p class="muted" style="margin:0 0 10px;font-size:0.85rem;">
+    Probes known Securly subdomains. This is an <strong>active network test</strong> — it makes real fetch requests, one per second.
+  </p>
+  <div class="btnrow">
+    <button class="primary" id="enumerateBtn">ENUMERATE ENDPOINTS</button>
+    <button id="clearEnumeratorBtn">CLEAR</button>
+  </div>
+  <div class="status" id="enumeratorStatus">Ready.</div>
+  <div class="output" id="enumeratorOut"></div>
+</div>
+
+<!-- ===================== SECURLY PROFILE ===================== -->
+<h2>Securly Profile (public reference)</h2>
+<div class="panel">
+  <p class="muted" style="margin:0 0 10px;font-size:0.85rem;">
+    Independent third-party API-surface profile from API Evangelist. Public data only. Loaded from <code>data/securly-profile.json</code>.
+  </p>
+  <div class="btnrow">
+    <button class="primary" id="loadProfileBtn">LOAD PROFILE</button>
+  </div>
+  <div class="status" id="profileStatus">Ready.</div>
+  <div class="output" id="profileOut"></div>
+</div>
+
+<!-- ===================== FULL AUTOPSY ===================== -->
+<h2>Full Autopsy Report</h2>
+<div class="panel">
+  <p class="muted" style="margin:0 0 10px;font-size:0.85rem;">
+    Runs the decoder (if a URL is pasted), enumerates endpoints, and appends a verdict summary. All findings stay in this page.
+  </p>
+  <div class="btnrow">
+    <button class="primary" id="autopsyBtn">RUN FULL AUTOPSY</button>
+    <button id="copyAutopsyBtn" disabled>COPY REPORT</button>
+  </div>
+  <div class="status" id="autopsyStatus">Ready.</div>
+  <div class="output" id="autopsyOut"></div>
+</div>
+
+<div class="footer-note">
+  <strong>🐾 King of Sorrow's Filter Tester</strong> — Inappropriate Recycling v1<br>
+  by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)<br>
+  Discord: <a href="https://discord.gg/gnndNWXZtC" target="_blank" rel="noopener">gnndNWXZtC</a>
+  · Repo: <a href="https://github.com/interloper-mym/KING-O-SORROW-S-FILTER-TESTER" target="_blank" rel="noopener">KING-O-SORROW-S-FILTER-TESTER</a><br>
+  <br>
+  <em>Observation-only. The decoder is pure local text processing. The enumerator makes public-URL fetches one per second. No credentials, no tokens, no impersonation.</em>
+</div>
+
+<script src="js/shared.js"></script>
+<script src="js/api.js"></script>
+<script src="js/render.js"></script>
+<script>
+(function() {
+  /* ---------------- ELEMENTS ---------------- */
+  const decoderInput       = document.getElementById("decoderInput");
+  const decodeBtn          = document.getElementById("decodeBtn");
+  const clearDecoderBtn    = document.getElementById("clearDecoderBtn");
+  const decoderStatus      = document.getElementById("decoderStatus");
+  const decoderOut         = document.getElementById("decoderOut");
+
+  const enumerateBtn       = document.getElementById("enumerateBtn");
+  const clearEnumeratorBtn = document.getElementById("clearEnumeratorBtn");
+  const enumeratorStatus   = document.getElementById("enumeratorStatus");
+  const enumeratorOut      = document.getElementById("enumeratorOut");
+
+  const loadProfileBtn     = document.getElementById("loadProfileBtn");
+  const profileStatus      = document.getElementById("profileStatus");
+  const profileOut         = document.getElementById("profileOut");
+
+  const autopsyBtn         = document.getElementById("autopsyBtn");
+  const copyAutopsyBtn     = document.getElementById("copyAutopsyBtn");
+  const autopsyStatus      = document.getElementById("autopsyStatus");
+  const autopsyOut         = document.getElementById("autopsyOut");
+
+  let lastAutopsyText = "";
+
+  /* ---------------- MOOD ---------------- */
+  if (KOS.getMood() === "sorrow") document.body.classList.add("mood-sorrow");
+
+  /* ============================================================
+     REDIRECT DECODER
+     ------------------------------------------------------------
+     Pure local text processing. No network. Extracts:
+       - url= (base64) → decoded target
+       - redirectionToken= → token + heuristics on token type
+       - other params (host, uf, cf, reason) → echoed for context
+     ============================================================ */
+  function decodeSecurlyRedirect(raw) {
+    const out = { raw: raw, params: {}, decoded: null, token: null, tokenType: null, tokenLength: 0, errors: [] };
+    try {
+      const u = new URL(raw);
+      const sp = u.searchParams;
+      for (const [k, v] of sp.entries()) out.params[k] = v;
+
+      const b64 = sp.get("url");
+      if (b64) {
+        try {
+          // pad + normalize base64
+          let s = b64.replace(/-/g, "+").replace(/_/g, "/");
+          while (s.length % 4) s += "=";
+          out.decoded = decodeURIComponent(escape(atob(s)));
+        } catch (e) {
+          try { out.decoded = atob(b64); }
+          catch (e2) { out.errors.push("base64 decode failed: " + e2.message); }
+        }
+      }
+
+      const token = sp.get("redirectionToken");
+      if (token) {
+        out.token = token;
+        out.tokenLength = token.length;
+        if (token.split(".").length === 3) out.tokenType = "JWT (3 segments)";
+        else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) out.tokenType = "UUID";
+        else if (/^\d{10,13}$/.test(token)) out.tokenType = "timestamp (epoch)";
+        else if (/^[A-Za-z0-9+/=]+$/.test(token) && token.length > 40) out.tokenType = "base64 (opaque)";
+        else out.tokenType = "unknown";
+      }
+    } catch (e) {
+      out.errors.push("URL parse failed: " + e.message);
+    }
+    return out;
+  }
+
+  decodeBtn.addEventListener("click", () => {
+    const raw = decoderInput.value.trim();
+    if (!raw) { KOS.setStatus(decoderStatus, "Paste a URL first.", "bad"); return; }
+    const out = decodeSecurlyRedirect(raw);
+    KOS_RENDER.renderSecurlyDecoder(out, decoderOut);
+    if (out.decoded) {
+      KOS.setStatus(decoderStatus, "Decoded target: " + out.decoded, "ok");
+    } else if (out.errors.length) {
+      KOS.setStatus(decoderStatus, "Decode errors: " + out.errors.join("; "), "bad");
+    } else {
+      KOS.setStatus(decoderStatus, "No decodable target found in URL.", "warn");
+    }
+  });
+
+  clearDecoderBtn.addEventListener("click", () => {
+    decoderInput.value = "";
+    decoderOut.innerHTML = "";
+    KOS.setStatus(decoderStatus, "Ready.", "muted");
+  });
+
+  /* ============================================================
+     ENDPOINT ENUMERATOR
+     ------------------------------------------------------------
+     Active network probe. Hits each known Securly subdomain with
+     a no-cors fetch, times it, records reachable/error.
+     ============================================================ */
+  const SECURLY_SUBDOMAINS = [
+    "block.securly.com",
+    "api.securly.com",
+    "securly.com",
+    "docs.securly.com",
+    "www.securly.com",
+    "www-1.geo.uswest2.v1api.securly.com",
+    "www-2.geo.uswest2.v1api.securly.com",
+    "www-3.geo.uswest2.v1api.securly.com",
+    "www-4.geo.uswest2.v1api.securly.com",
+    "www-filter.c4.securly.com"
+  ];
+
+  async function enumerateSecurlyEndpoints() {
+    const results = [];
+    for (const host of SECURLY_SUBDOMAINS) {
+      KOS.setStatus(enumeratorStatus, "Probing " + host + " …", "working");
+      const t0 = performance.now();
+      try {
+        await KOS.fetchWithTimeout("https://" + host + "/", 6000, { mode: "no-cors" });
+        const ms = Math.round(performance.now() - t0);
+        results.push({ host, ok: true, ms });
+      } catch (e) {
+        results.push({ host, ok: false, err: e.message });
+      }
+      // update live as we go
+      KOS_RENDER.renderSecurlyEnum(results, enumeratorOut);
+      await KOS.sleep(500);
+    }
+    return results;
+  }
+
+  enumerateBtn.addEventListener("click", async () => {
+    enumerateBtn.disabled = true;
+    enumeratorOut.innerHTML = "";
+    KOS.setStatus(enumeratorStatus, "Enumerating 10 endpoints …", "working");
+    const results = await enumerateSecurlyEndpoints();
+    const okCount = results.filter(r => r.ok).length;
+    KOS.setStatus(
+      enumeratorStatus,
+      okCount + " / " + results.length + " endpoints reachable",
+      okCount > 0 ? "ok" : "bad"
+    );
+    enumerateBtn.disabled = false;
+  });
+
+  clearEnumeratorBtn.addEventListener("click", () => {
+    enumeratorOut.innerHTML = "";
+    KOS.setStatus(enumeratorStatus, "Ready.", "muted");
+  });
+
+  /* ============================================================
+     SECURLY PROFILE
+     ------------------------------------------------------------
+     Loads data/securly-profile.json and displays the fields
+     we care about (source, access model, exposes, pricing).
+     ============================================================ */
+  loadProfileBtn.addEventListener("click", async () => {
+    loadProfileBtn.disabled = true;
+    KOS.setStatus(profileStatus, "Loading profile …", "working");
+    const profile = await KOS.loadSecurlyProfile();
+    if (!profile) {
+      KOS.setStatus(profileStatus, "Failed to load profile (check data/securly-profile.json).", "bad");
+      loadProfileBtn.disabled = false;
+      return;
+    }
+
+    let html = "";
+    const meta = profile.meta || {};
+    html += "<div class='info'><strong>Source:</strong> " + KOS.escapeHtml(meta.source || "?") + "</div>";
+    if (meta.url)   html += "<div><strong>Reference:</strong> " + KOS.escapeHtml(meta.url) + "</div>";
+    if (meta.accessModel) html += "<div><strong>Access model:</strong> " + KOS.escapeHtml(meta.accessModel) + "</div>";
+    if (meta.notes) html += "<div><strong>Notes:</strong> " + KOS.escapeHtml(meta.notes) + "</div>";
+
+    if (Array.isArray(profile.consumes) && profile.consumes.length) {
+      html += "\n<div><strong>Securly consumes (inbound integrations):</strong></div>";
+      for (const c of profile.consumes) {
+        html += "<div class='muted'>  • " + KOS.escapeHtml(c.system || c.name || "?") + " — " + KOS.escapeHtml(c.data || c.protocol || "") + "</div>";
+      }
+    }
+
+    if (Array.isArray(profile.exposes) && profile.exposes.length) {
+      html += "\n<div><strong>Securly exposes (gated provider APIs):</strong></div>";
+      for (const e of profile.exposes) {
+        html += "<div class='muted'>  • " + KOS.escapeHtml(e.api || "?") + " — " + KOS.escapeHtml(e.description || "") + "</div>";
+      }
+    }
+
+    if (profile.security) {
+      html += "\n<div><strong>Security posture:</strong></div>";
+      for (const k of Object.keys(profile.security)) {
+        const v = profile.security[k];
+        if (v && typeof v === "object") {
+          const parts = [];
+          for (const kk of Object.keys(v)) parts.push(kk + "=" + v[kk]);
+          html += "<div class='muted'>  • " + KOS.escapeHtml(k) + ": " + KOS.escapeHtml(parts.join(", ")) + "</div>";
+        }
+      }
+    }
+
+    if (profile.pricing) {
+      html += "\n<div><strong>Pricing:</strong></div>";
+      for (const k of Object.keys(profile.pricing)) {
+        html += "<div class='muted'>  • " + KOS.escapeHtml(k) + ": " + KOS.escapeHtml(String(profile.pricing[k])) + "</div>";
+      }
+    }
+
+    profileOut.innerHTML = html;
+    KOS.setStatus(profileStatus, "Profile loaded.", "ok");
+    loadProfileBtn.disabled = false;
+  });
+
+  /* ============================================================
+     FULL AUTOPSY
+     ------------------------------------------------------------
+     Combines: decoder (if input present), enumerator, verdict summary.
+     Everything ends up in autopsyOut, and can be copied as text.
+     ============================================================ */
+  autopsyBtn.addEventListener("click", async () => {
+    autopsyBtn.disabled = true;
+    copyAutopsyBtn.disabled = true;
+    autopsyOut.innerHTML = "";
+    KOS.setStatus(autopsyStatus, "Running full autopsy …", "working");
+
+    const lines = [];
+    lines.push("=== SECURLY AUTOPSY REPORT ===");
+    lines.push("Date: " + KOS.timestamp());
+    lines.push("Byline: " + KOS.BYLINE);
+    lines.push("");
+
+    // 1. Decoder (if a URL is pasted)
+    const raw = decoderInput.value.trim();
+    if (raw) {
+      lines.push("--- Redirect Decoder ---");
+      const out = decodeSecurlyRedirect(raw);
+      if (out.decoded) lines.push("Decoded target: " + out.decoded);
+      else lines.push("Decoded target: (not found)");
+      if (out.token) {
+        lines.push("Token type:    " + out.tokenType);
+        lines.push("Token length:  " + out.tokenLength + " bytes");
+      }
+      if (out.errors.length) {
+        lines.push("Errors:");
+        for (const e of out.errors) lines.push("  " + e);
+      }
+      lines.push("");
+    } else {
+      lines.push("--- Redirect Decoder ---");
+      lines.push("(no URL pasted — skipped)");
+      lines.push("");
+    }
+
+    // 2. Enumerator
+    lines.push("--- Endpoint Enumerator ---");
+    KOS.setStatus(autopsyStatus, "Enumerating endpoints …", "working");
+    const results = await enumerateSecurlyEndpoints();
+    for (const r of results) {
+      if (r.ok) lines.push("[OK]   " + r.host + " → " + r.ms + "ms");
+      else      lines.push("[FAIL] " + r.host + " → " + r.err);
+    }
+    lines.push("");
+
+    // 3. Verdict summary
+    const okCount = results.filter(r => r.ok).length;
+    lines.push("--- Verdict ---");
+    lines.push("Reachable endpoints: " + okCount + " / " + results.length);
+    lines.push("Interpretation:      " + (
+      okCount === results.length ? "full Securly surface reachable" :
+      okCount >= results.length / 2 ? "partial Securly surface reachable" :
+      okCount > 0 ? "minimal reachability — most endpoints blocked or down" :
+      "no Securly endpoints reachable from this network"
+    ));
+    lines.push("");
+    lines.push("— " + KOS.PROJECT + " · " + KOS.VERSION);
+
+    lastAutopsyText = lines.join("\n");
+    autopsyOut.textContent = lastAutopsyText;
+    KOS.setStatus(autopsyStatus, "Autopsy complete.", "ok");
+
+    autopsyBtn.disabled = false;
+    copyAutopsyBtn.disabled = false;
+  });
+
+  copyAutopsyBtn.addEventListener("click", () => {
+    if (!lastAutopsyText) return;
+    KOS.copyToClipboard(lastAutopsyText, copyAutopsyBtn);
+  });
+
+  /* ============================================================
+     PRE-WARM: manifest (for other pages) and securly profile
+     ============================================================ */
+  KOS.loadManifest().catch(() => {});
+})();
+</script>
+</body>
+</html>
