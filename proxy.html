@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🔍 Proxy Fingerprint — King of Sorrow's Filter Tester</title>
+<link rel="icon" href="assets/king-of-sorrow.png" />
+<style>
+:root{
+  --bg:#0f1019;--surface:#1a1c2b;--surface-hover:#232540;--border:#2c2e42;
+  --text:#f2f2f7;--muted:#9a9ab0;--accent:#7c5cff;--accent-hover:#9375ff;
+  --ok:#6ee787;--bad:#ff7b72;--warn:#ffd866;--info:#79c0ff;--radius:12px;
+  --sorrow:#8b2c2c;--sorrow-glow:#ff4444;
+}
+body.mood-sorrow{
+  --bg:#0a0a0f;--surface:#14141c;--surface-hover:#1c1c28;--border:#2a1a1a;
+  --accent:#8b2c2c;--accent-hover:#a83c3c;--muted:#6a6a7a;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:20px;background:var(--bg);color:var(--text);
+  font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;
+  transition:background 0.8s ease,color 0.8s ease;min-height:100vh;
+}
+a.back{color:var(--info);text-decoration:none;font-size:0.9rem;display:inline-block;margin-bottom:12px}
+a.back:hover{text-decoration:underline}
+h1{margin:0 0 4px;font-size:1.5rem;display:flex;align-items:center;gap:10px}
+h1 img{width:40px;height:40px;border-radius:50%;border:2px solid var(--accent);object-fit:cover}
+.subtitle{color:var(--muted);font-size:0.85rem;margin:4px 0 20px;font-style:italic}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+input[type=text]{
+  width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:12px 14px;border-radius:var(--radius);
+  font-family:"Courier New",monospace;font-size:14px;
+}
+input[type=text]:focus{outline:none;border-color:var(--accent)}
+select{
+  background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:10px 12px;border-radius:var(--radius);font-family:inherit;font-size:13px;
+}
+select:focus{outline:none;border-color:var(--accent)}
+.btnrow{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap;align-items:center}
+button{
+  background:var(--surface);border:1px solid var(--border);color:var(--text);
+  padding:10px 18px;border-radius:var(--radius);cursor:pointer;font-size:13px;font-family:inherit;
+}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:0.5;cursor:wait}
+button.primary{background:var(--accent);border-color:var(--accent);color:white}
+button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.status{padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:10px 0;min-height:2.4em;font-family:"Courier New",monospace;font-size:12px;color:var(--muted)}
+.status.working{color:var(--warn);border-color:var(--warn)}
+.status.ok{color:var(--ok);border-color:var(--ok)}
+.status.bad{color:var(--bad);border-color:var(--bad)}
+.output{background:#000;border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-family:"Courier New",monospace;font-size:12px;line-height:1.6;min-height:120px;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.info{color:var(--info)}.muted{color:var(--muted)}
+.footer-note{margin-top:20px;padding:12px;background:var(--surface);border-left:3px solid var(--accent);border-radius:4px;font-size:0.78rem;color:var(--muted);line-height:1.5}
+.footer-note a{color:var(--info);text-decoration:none}
+.footer-note a:hover{text-decoration:underline}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.grid2{grid-template-columns:1fr}}
+details{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:10px}
+summary{cursor:pointer;color:var(--info);font-size:0.85rem}
+details pre{color:var(--muted);font-size:11px;margin:8px 0 0;overflow-x:auto;max-height:200px}
+.db-count{color:var(--muted);font-size:0.8rem;margin-top:6px}
+</style>
+</head>
+<body>
+
+<a class="back" href="index.html">← back to hub</a>
+
+<h1>
+  <img src="assets/king-of-sorrow.png" alt="" onerror="this.style.display='none'" />
+  🔍 Proxy Fingerprint
+</h1>
+<p class="subtitle">King of Sorrow's Filter Tester — Inappropriate Recycling v1 — by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)</p>
+
+<div class="panel">
+  <p class="muted" style="margin:0 0 12px;font-size:0.85rem;">
+    Fetches a target URL, extracts its title / meta tags / script sources,
+    and matches against the proxy fingerprint database at
+    <code>data/proxies.json</code>. Everything is local after the initial fetch.
+  </p>
+
+  <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">URL to fingerprint:</label>
+  <input type="text" id="proxyInput" placeholder="https://example-proxy.com/" autocomplete="off" />
+
+  <div class="grid2" style="margin-top:12px;">
+    <div>
+      <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Fetch mode:</label>
+      <select id="proxyMode">
+        <option value="cors" selected>cors (readable — preferred)</option>
+        <option value="no-cors">no-cors (opaque — reachability only)</option>
+      </select>
+    </div>
+    <div>
+      <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Database:</label>
+      <div class="db-count" id="dbCount">loading proxies.json…</div>
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="primary" id="fingerprintBtn">FINGERPRINT</button>
+    <button id="copyBtn" disabled>COPY RESULTS</button>
+    <button id="clearBtn">CLEAR</button>
+  </div>
+
+  <div class="status" id="status">Ready. Enter a URL and click FINGERPRINT.</div>
+</div>
+
+<div class="output" id="out">No results yet.</div>
+
+<details>
+  <summary>Show raw extracted signals (after a run)</summary>
+  <pre id="rawOut">(none yet)</pre>
+</details>
+
+<div class="footer-note">
+  <strong>🐾 King of Sorrow's Filter Tester</strong> — Inappropriate Recycling v1<br>
+  by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)<br>
+  Discord: <a href="https://discord.gg/gnndNWXZtC" target="_blank" rel="noopener">gnndNWXZtC</a>
+  · Repo: <a href="https://github.com/interloper-mym/KING-O-SORROW-S-FILTER-TESTER" target="_blank" rel="noopener">KING-O-SORROW-S-FILTER-TESTER</a><br>
+  <br>
+  <em>Observation-only. If the target blocks CORS, the tester falls back to no-cors and reports reachability instead of content. No credentials, no impersonation.</em>
+</div>
+
+<script src="js/shared.js"></script>
+<script src="js/api.js"></script>
+<script src="js/render.js"></script>
+<script>
+(function() {
+  /* ---------------- ELEMENTS ---------------- */
+  const proxyInput     = document.getElementById("proxyInput");
+  const proxyMode      = document.getElementById("proxyMode");
+  const dbCount        = document.getElementById("dbCount");
+  const fingerprintBtn = document.getElementById("fingerprintBtn");
+  const copyBtn        = document.getElementById("copyBtn");
+  const clearBtn       = document.getElementById("clearBtn");
+  const statusEl       = document.getElementById("status");
+  const out            = document.getElementById("out");
+  const rawOut         = document.getElementById("rawOut");
+
+  let PROXY_DB = null;
+  let lastText = "";
+
+  /* ---------------- MOOD ---------------- */
+  if (KOS.getMood() === "sorrow") document.body.classList.add("mood-sorrow");
+
+  /* ============================================================
+     LOAD PROXY DATABASE
+     ============================================================ */
+  (async () => {
+    PROXY_DB = await KOS.loadProxies();
+    if (!PROXY_DB) {
+      dbCount.textContent = "failed to load data/proxies.json";
+      dbCount.style.color = "var(--bad)";
+      return;
+    }
+    const count = Array.isArray(PROXY_DB)
+      ? PROXY_DB.length
+      : (Array.isArray(PROXY_DB.proxies) ? PROXY_DB.proxies.length : Object.keys(PROXY_DB).length);
+    dbCount.textContent = "loaded — " + count + " fingerprints";
+    dbCount.style.color = "var(--ok)";
+  })();
+
+  /* ============================================================
+     FETCH + PARSE TARGET
+     Returns { ok, mode, url, status, finalUrl, title, metas, scripts, links, bodyLength, html, error }
+     ============================================================ */
+  async function fetchTarget(url, mode) {
+    const result = {
+      ok: false, mode, url,
+      status: null, finalUrl: null,
+      title: "", metas: {}, scripts: [], links: [],
+      bodyLength: 0, html: null, error: null
+    };
+    try {
+      const res = await KOS.fetchWithTimeout(url, 12000, { mode: mode === "cors" ? "cors" : "no-cors" });
+      result.status = res.status;
+      result.finalUrl = res.url || url;
+      if (mode === "cors") {
+        const html = await res.text();
+        result.html = html;
+        result.bodyLength = html.length;
+        parseHtml(html, result);
+        result.ok = true;
+      } else {
+        // opaque — we know it fetched but can't read anything
+        result.ok = true;
+        result.bodyLength = null;
+      }
+    } catch (e) {
+      result.error = e.message;
+    }
+    return result;
+  }
+
+  /* ============================================================
+     HTML PARSER (regex-based, no DOM deps)
+     Extracts title, meta tags, script srcs, link hrefs.
+     ============================================================ */
+  function parseHtml(html, result) {
+    // Title
+    const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    if (titleMatch) result.title = decodeEntities(titleMatch[1].trim());
+
+    // Meta tags: <meta name="..." content="..."> and <meta property="..." content="...">
+    const metaRe = /<meta\s+([^>]+)>/gi;
+    let m;
+    while ((m = metaRe.exec(html)) !== null) {
+      const attrs = parseAttrs(m[1]);
+      const key = attrs.name || attrs.property || attrs["http-equiv"];
+      if (key && attrs.content) {
+        result.metas[key.toLowerCase()] = decodeEntities(attrs.content);
+      }
+    }
+
+    // Scripts
+    const scriptRe = /<script\s+([^>]+)>/gi;
+    while ((m = scriptRe.exec(html)) !== null) {
+      const attrs = parseAttrs(m[1]);
+      if (attrs.src) result.scripts.push(attrs.src);
+    }
+
+    // Links
+    const linkRe = /<link\s+([^>]+)>/gi;
+    while ((m = linkRe.exec(html)) !== null) {
+      const attrs = parseAttrs(m[1]);
+      if (attrs.href) {
+        result.links.push({ href: attrs.href, rel: attrs.rel || "", as: attrs.as || "" });
+      }
+    }
+  }
+
+  function parseAttrs(str) {
+    const attrs = {};
+    const re = /([a-zA-Z_:][a-zA-Z0-9_:.\-]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g;
+    let m;
+    while ((m = re.exec(str)) !== null) {
+      attrs[m[1].toLowerCase()] = m[2] != null ? m[2] : (m[3] != null ? m[3] : m[4]);
+    }
+    return attrs;
+  }
+
+  function decodeEntities(s) {
+    if (!s) return s;
+    return s
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&nbsp;/g, " ");
+  }
+
+  /* ============================================================
+     FINGERPRINT MATCHER
+     Walks the DB, checks each targetElement against parsed signals.
+     Supports selectors like:
+       - meta[name='description'][content='...']
+       - meta[content='...']
+       - link[rel='modulepreload'][href*='/baremux/']
+       - script[src*='...']
+       - title  (with optional content match)
+       - simple CSS selectors we can regex (h1, div#id, .class, a[href='...'])
+     ============================================================ */
+  function matchFingerprint(fp, signals) {
+    const elements = fp.targetElements || fp.targets || [];
+    let hits = 0;
+    const detail = [];
+
+    for (const el of elements) {
+      const target = el.target || el.selector || "";
+      const wantContent = el.content;
+      const isSub = !!el.substringMatch;
+
+      const matched = matchSelector(target, wantContent, isSub, signals);
+      if (matched) { hits++; detail.push({ target, hit: true }); }
+      else detail.push({ target, hit: false });
+    }
+
+    return { proxy: fp.proxyName || fp.name || "unknown", hits, total: elements.length, detail };
+  }
+
+  function matchSelector(selector, wantContent, isSub, signals) {
+    // meta[...]
+    if (/^meta\[/i.test(selector)) {
+      const nameMatch = selector.match(/name\s*=\s*['"]([^'"]+)['"]/i);
+      const propMatch = selector.match(/property\s*=\s*['"]([^'"]+)['"]/i);
+      const contentMatch = selector.match(/content\s*[*]?=\s*['"]([^'"]+)['"]/i);
+      const key = (nameMatch ? nameMatch[1] : (propMatch ? propMatch[1] : null));
+      let content = signals.title || "";
+      // Look up by name/property
+      let actual = null;
+      if (key) actual = signals.metas[key.toLowerCase()] || null;
+      // Or by any meta with matching content
+      if (contentMatch && !actual) {
+        const wanted = contentMatch[1].toLowerCase();
+        for (const k of Object.keys(signals.metas)) {
+          const v = signals.metas[k].toLowerCase();
+          if (v.includes(wanted)) { actual = signals.metas[k]; break; }
+        }
+      }
+      if (!actual) return false;
+      if (contentMatch) {
+        const wanted = contentMatch[1].toLowerCase();
+        const have = actual.toLowerCase();
+        return have.includes(wanted) || (isSub && have.includes(wanted));
+      }
+      return true;
+    }
+
+    // link[rel='...'][href*='...']
+    if (/^link\[/i.test(selector)) {
+      const relMatch = selector.match(/rel\s*=\s*['"]([^'"]+)['"]/i);
+      const hrefMatch = selector.match(/href\s*\*?=\s*['"]([^'"]+)['"]/i);
+      const hrefSub = /href\s*\*=/i.test(selector);
+      for (const link of signals.links) {
+        let ok = true;
+        if (relMatch) {
+          if ((link.rel || "").toLowerCase().indexOf(relMatch[1].toLowerCase()) === -1) ok = false;
+        }
+        if (ok && hrefMatch) {
+          const wanted = hrefMatch[1];
+          if (hrefSub) {
+            if (link.href.indexOf(wanted) === -1) ok = false;
+          } else {
+            if (link.href !== wanted) ok = false;
+          }
+        }
+        if (ok) return true;
+      }
+      return false;
+    }
+
+    // script[src*='...']
+    if (/^script\[/i.test(selector)) {
+      const srcMatch = selector.match(/src\s*\*?=\s*['"]([^'"]+)['"]/i);
+      if (!srcMatch) return signals.scripts.length > 0;
+      for (const s of signals.scripts) {
+        if (s.indexOf(srcMatch[1]) !== -1) return true;
+      }
+      return false;
+    }
+
+    // title (optionally with content)
+    if (selector === "title" || /^title$/i.test(selector)) {
+      if (!signals.title) return false;
+      if (wantContent) {
+        const have = signals.title;
+        const wanted = wantContent;
+        if (isSub) return have.toLowerCase().indexOf(wanted.toLowerCase()) !== -1;
+        return have === wanted;
+      }
+      return true;
+    }
+
+    // tag#id, tag.class, tag[attr='value']
+    // We do a rough regex match against the raw HTML if we still have it.
+    if (signals.html) {
+      // tag[attr='value']
+      const attrMatch = selector.match(/^([a-zA-Z0-9]+)\[([a-zA-Z\-]+)\s*=\s*['"]([^'"]+)['"]\]$/);
+      if (attrMatch) {
+        const re = new RegExp("<" + attrMatch[1] + "\\b[^>]*\\b" + attrMatch[2] + "\\s*=\\s*['\"]" + escapeRe(attrMatch[3]) + "['\"]", "i");
+        if (re.test(signals.html)) return true;
+      }
+      // tag#id
+      const idMatch = selector.match(/^([a-zA-Z0-9]+)?#([a-zA-Z0-9_\-]+)$/);
+      if (idMatch) {
+        const tag = idMatch[1] || "[a-zA-Z0-9]+";
+        const re = new RegExp("<" + tag + "\\b[^>]*\\bid\\s*=\\s*['\"]" + escapeRe(idMatch[2]) + "['\"]", "i");
+        if (re.test(signals.html)) return true;
+      }
+      // .class
+      if (/^\.[a-zA-Z0-9_\-]+$/.test(selector) || /^[a-zA-Z0-9]+\.[a-zA-Z0-9_\-]+$/.test(selector)) {
+        const m = selector.match(/^([a-zA-Z0-9]+)?\.([a-zA-Z0-9_\-]+)$/);
+        const tag = m[1] || "[a-zA-Z0-9]+";
+        const re = new RegExp("<" + tag + "\\b[^>]*\\bclass\\s*=\\s*['\"][^'\"]*\\b" + escapeRe(m[2]) + "\\b", "i");
+        if (re.test(signals.html)) return true;
+      }
+      // plain tag name (h1, h2, footer, etc.)
+      if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(selector)) {
+        const re = new RegExp("<" + selector + "\\b", "i");
+        if (re.test(signals.html)) return true;
+      }
+    }
+
+    return false;
+  }
+
+  function escapeRe(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  /* ============================================================
+     FINGERPRINT RUNNER
+     ============================================================ */
+  async function runFingerprint() {
+    const url = proxyInput.value.trim();
+    if (!url) { KOS.setStatus(statusEl, "Enter a URL first.", "bad"); return; }
+    if (!PROXY_DB) { KOS.setStatus(statusEl, "Proxy database not loaded yet. Wait a moment.", "warn"); return; }
+
+    fingerprintBtn.disabled = true;
+    copyBtn.disabled = true;
+    out.textContent = "Fetching " + url + " …";
+    rawOut.textContent = "(pending)";
+    KOS.setStatus(statusEl, "Fetching target …", "working");
+
+    const mode = proxyMode.value;
+    const target = await fetchTarget(url, mode);
+
+    if (!target.ok) {
+      out.innerHTML = "<div class='bad'>Fetch failed: " + KOS.escapeHtml(target.error || "unknown") + "</div>";
+      KOS.setStatus(statusEl, "Fetch failed: " + (target.error || "unknown"), "bad");
+      fingerprintBtn.disabled = false;
+      return;
+    }
+
+    const list = Array.isArray(PROXY_DB)
+      ? PROXY_DB
+      : (Array.isArray(PROXY_DB.proxies) ? PROXY_DB.proxies : []);
+
+    // Match
+    const matches = [];
+    if (mode === "cors" && target.html) {
+      KOS.setStatus(statusEl, "Matching " + list.length + " fingerprints …", "working");
+      for (const fp of list) {
+        const m = matchFingerprint(fp, target);
+        if (m.hits > 0) matches.push(m);
+      }
+    }
+
+    // Sort by hits desc
+    matches.sort((a, b) => b.hits - a.hits);
+
+    // Build output
+    let text = "";
+    text += "=== PROXY FINGERPRINT ===\n";
+    text += "URL:          " + url + "\n";
+    text += "Mode:         " + mode + "\n";
+    text += "Final URL:    " + (target.finalUrl || url) + "\n";
+    text += "Status:       " + (target.status != null ? target.status : "?") + "\n";
+    if (target.bodyLength != null) text += "Body length:  " + target.bodyLength + " bytes\n";
+    text += "Title:        " + (target.title || "(none)") + "\n";
+    text += "Scripts:      " + target.scripts.length + "\n";
+    text += "Meta tags:    " + Object.keys(target.metas).length + "\n";
+    text += "Links:        " + target.links.length + "\n";
+    text += "\n--- Matches ---\n";
+
+    if (mode === "no-cors") {
+      text += "(opaque response — content not readable, only reachability confirmed)\n";
+    } else if (!matches.length) {
+      text += "No known proxy fingerprints matched.\n";
+    } else {
+      for (const m of matches) {
+        const conf = Math.round((m.hits / m.total) * 100);
+        text += "Matched: " + m.proxy + " (" + m.hits + "/" + m.total + " — " + conf + "%)\n";
+      }
+    }
+
+    text += "\n— " + KOS.PROJECT + " · " + KOS.VERSION + "\n";
+    lastText = text;
+
+    // HTML render
+    if (mode === "no-cors") {
+      out.innerHTML =
+        "<div><strong>URL:</strong> " + KOS.escapeHtml(url) + "</div>" +
+        "<div class='warn'><strong>Mode:</strong> no-cors (opaque — content not readable)</div>" +
+        "<div class='info'>Reachability confirmed. Response type: " + KOS.escapeHtml(String(target.status || "opaque")) + "</div>" +
+        "<hr/><div class='muted'>To fingerprint the page content, the target must allow CORS or you must use a proxy that adds CORS headers.</div>";
+      KOS.setStatus(statusEl, "Reachable (opaque). No content to fingerprint.", "warn");
+    } else {
+      let html = "";
+      html += "<div><strong>URL:</strong> " + KOS.escapeHtml(url) + "</div>";
+      html += "<div><strong>Title:</strong> " + KOS.escapeHtml(target.title || "(none)") + "</div>";
+      html += "<div><strong>Body length:</strong> " + target.bodyLength + " bytes</div>";
+      html += "<hr/>";
+      if (!matches.length) {
+        html += "<div class='muted'>No known proxy fingerprints matched.</div>";
+      } else {
+        for (const m of matches) {
+          const conf = Math.round((m.hits / m.total) * 100);
+          const cls = conf >= 75 ? "bad" : (conf >= 50 ? "warn" : "muted");
+          html += "<div class='" + cls + "'>Matched: <strong>" + KOS.escapeHtml(m.proxy) + "</strong> (" + m.hits + "/" + m.total + " — " + conf + "%)</div>";
+        }
+      }
+      out.innerHTML = html;
+      KOS.setStatus(statusEl, matches.length + " fingerprint(s) matched. See below.", matches.length ? "ok" : "warn");
+    }
+
+    // Raw signals dump
+    rawOut.textContent =
+      "Title: " + (target.title || "(none)") + "\n\n" +
+      "Meta tags:\n" + JSON.stringify(target.metas, null, 2) + "\n\n" +
+      "Scripts:\n" + (target.scripts.length ? target.scripts.join("\n") : "(none)") + "\n\n" +
+      "Links:\n" + (target.links.length ? target.links.map(l => l.href + (l.rel ? " [rel=" + l.rel + "]" : "")).join("\n") : "(none)");
+
+    fingerprintBtn.disabled = false;
+    copyBtn.disabled = false;
+  }
+
+  fingerprintBtn.addEventListener("click", runFingerprint);
+  proxyInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !fingerprintBtn.disabled) runFingerprint();
+  });
+
+  copyBtn.addEventListener("click", () => {
+    if (!lastText) return;
+    KOS.copyToClipboard(lastText, copyBtn);
+  });
+
+  clearBtn.addEventListener("click", () => {
+    proxyInput.value = "";
+    out.textContent = "No results yet.";
+    rawOut.textContent = "(none yet)";
+    lastText = "";
+    copyBtn.disabled = true;
+    KOS.setStatus(statusEl, "Ready. Enter a URL and click FINGERPRINT.", "muted");
+  });
+
+  /* ---------------- PRE-WARM MANIFEST ---------------- */
+  KOS.loadManifest().catch(() => {});
+})();
+</script>
+</body>
+</html>
