@@ -1,0 +1,97 @@
+{
+  "_by": "by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)",
+  "_purpose": "Public API surface profile of Securly. Sourced from the API Evangelist third-party catalog. All fields reflect public information only.",
+  "_source": "https://github.com/api-evangelist/securly",
+  "_method": "documented + searched + probed (no credentials, no breach)",
+
+  "meta": {
+    "source": "API Evangelist — independent third-party profile",
+    "url": "https://github.com/api-evangelist/securly",
+    "accessModel": "gated / district-contract",
+    "publicDeveloperPortal": false,
+    "publicOpenAPI": false,
+    "publicSignup": false,
+    "apiKeySelfService": false,
+    "notes": "All Securly capabilities require a school-district contract obtained through Securly sales. There is no public, self-service developer API. The MDM API connection capability is included with a district's Securly MDM entitlement rather than sold as a metered API product."
+  },
+
+  "consumes": [
+    { "system": "OneRoster 1.2", "protocol": "REST + OAuth2", "data": "Roster (students, classes, enrollments)" },
+    { "system": "Google Classroom", "protocol": "Google Workspace API", "data": "Roster + coursework" },
+    { "system": "Schoology", "protocol": "Schoology API", "data": "Roster" },
+    { "system": "Canvas", "protocol": "Canvas LMS API", "data": "Roster" },
+    { "system": "ClassLink", "protocol": "ClassLink API", "data": "Roster + SSO" },
+    { "system": "Securly Sync", "protocol": "Proprietary", "data": "Roster (fallback)" },
+    { "system": "CSV Upload", "protocol": "Manual", "data": "Roster (fallback)" },
+    { "system": "Google Workspace", "protocol": "OAuth2 + Admin SDK", "data": "Directory, OUs, email" },
+    { "system": "Microsoft 365 / Entra", "protocol": "OAuth2 + Graph", "data": "Directory, OUs, email" },
+    { "system": "Apple School Manager", "protocol": "ASM API + ADE/DEP + VPP", "data": "Devices, apps, content" },
+    { "system": "Student Information Systems (SIS)", "protocol": "OneRoster or CSV", "data": "Roster" }
+  ],
+
+  "exposes": [
+    {
+      "api": "securly-mdm-device-inventory-api",
+      "description": "Pull a device inventory (iPads, Macs, Apple TVs)",
+      "auth": "OAuth-style (Client ID + connection-specific Password + Token URL, issued per tenant)",
+      "endpoints": "endpointsModeled — no public paths, base URL, or OpenAPI published",
+      "access": "gated — per-tenant credentials issued via MDM → Settings → API connections"
+    },
+    {
+      "api": "securly-mdm-student-assignment-api",
+      "description": "Assign / unassign students to devices",
+      "auth": "OAuth-style (same flow as device inventory)",
+      "endpoints": "endpointsModeled — no public paths, base URL, or OpenAPI published",
+      "access": "gated — per-tenant credentials issued via MDM → Settings → API connections"
+    }
+  ],
+
+  "websocket": {
+    "documented": false,
+    "notes": "No public WebSocket (ws:// or wss://) or server-push API is documented anywhere on Securly's public surface."
+  },
+
+  "security": {
+    "www.securly.com": {
+      "https": true,
+      "tls_version": "TLSv1.3",
+      "cert_expires": "Nov  4 23:59:59 2026 GMT",
+      "hsts": false
+    },
+    "docs.securly.com": {
+      "https": true,
+      "tls_version": "TLSv1.3",
+      "cert_expires": "Oct  8 19:12:44 2026 GMT",
+      "hsts": true,
+      "hsts_max_age": 63072000
+    },
+    "securly.com": {
+      "dnssec": true,
+      "caa": [],
+      "spf": true,
+      "dmarc": true,
+      "dmarc_policy": "quarantine"
+    },
+    "vulnerabilityDisclosure": {
+      "contact": "mailto:security-submission@securly.com",
+      "source": "https://www.securly.com/.well-known/security.txt",
+      "method": "searched (live probe)"
+    }
+  },
+
+  "pricing": {
+    "model": "per student per year",
+    "tiering": "by district size",
+    "sales": "contact-sales",
+    "mdmApi": "included with district MDM entitlement (not metered)"
+  },
+
+  "sources": [
+    { "label": "API Evangelist profile", "url": "https://github.com/api-evangelist/securly", "method": "documented" },
+    { "label": "Securly website", "url": "https://www.securly.com/", "method": "documented" },
+    { "label": "Securly docs", "url": "https://docs.securly.com/", "method": "documented" },
+    { "label": "Securly support", "url": "https://support.securly.com/hc/en-us", "method": "documented" },
+    { "label": "Security.txt", "url": "https://www.securly.com/.well-known/security.txt", "method": "searched" },
+    { "label": "DNS/TLS probe", "url": "live probe 2026-07-11", "method": "probed" }
+  ]
+}
