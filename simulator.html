@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🎛️ Simulator — King of Sorrow's Filter Tester</title>
+<link rel="icon" href="assets/king-of-sorrow.png" />
+<style>
+:root{
+  --bg:#0f1019;--surface:#1a1c2b;--surface-hover:#232540;--border:#2c2e42;
+  --text:#f2f2f7;--muted:#9a9ab0;--accent:#7c5cff;--accent-hover:#9375ff;
+  --ok:#6ee787;--bad:#ff7b72;--warn:#ffd866;--info:#79c0ff;--radius:12px;
+  --sorrow:#8b2c2c;--sorrow-glow:#ff4444;
+}
+body.mood-sorrow{
+  --bg:#0a0a0f;--surface:#14141c;--surface-hover:#1c1c28;--border:#2a1a1a;
+  --accent:#8b2c2c;--accent-hover:#a83c3c;--muted:#6a6a7a;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:20px;background:var(--bg);color:var(--text);
+  font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;
+  transition:background 0.8s ease,color 0.8s ease;min-height:100vh;
+}
+a.back{color:var(--info);text-decoration:none;font-size:0.9rem;display:inline-block;margin-bottom:12px}
+a.back:hover{text-decoration:underline}
+h1{margin:0 0 4px;font-size:1.5rem;display:flex;align-items:center;gap:10px}
+h1 img{width:40px;height:40px;border-radius:50%;border:2px solid var(--accent);object-fit:cover}
+h2{margin:24px 0 10px;font-size:0.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em}
+.subtitle{color:var(--muted);font-size:0.85rem;margin:4px 0 20px;font-style:italic}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+input[type=text]{
+  width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:12px 14px;border-radius:var(--radius);
+  font-family:"Courier New",monospace;font-size:14px;
+}
+input[type=text]:focus{outline:none;border-color:var(--accent)}
+select{
+  background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:10px 12px;border-radius:var(--radius);font-family:inherit;font-size:13px;width:100%;
+}
+select:focus{outline:none;border-color:var(--accent)}
+.btnrow{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap;align-items:center}
+button{
+  background:var(--surface);border:1px solid var(--border);color:var(--text);
+  padding:10px 18px;border-radius:var(--radius);cursor:pointer;font-size:13px;font-family:inherit;
+}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:0.5;cursor:wait}
+button.primary{background:var(--accent);border-color:var(--accent);color:white}
+button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.status{padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:10px 0;min-height:2.4em;font-family:"Courier New",monospace;font-size:12px;color:var(--muted)}
+.status.working{color:var(--warn);border-color:var(--warn)}
+.status.ok{color:var(--ok);border-color:var(--ok)}
+.status.bad{color:var(--bad);border-color:var(--bad)}
+.output{background:#000;border:1px solid var(--border);border-radius:var(--radius);padding:18px;font-family:"Courier New",monospace;font-size:13px;line-height:1.7;min-height:180px;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.info{color:var(--info)}.muted{color:var(--muted)}
+.footer-note{margin-top:20px;padding:12px;background:var(--surface);border-left:3px solid var(--accent);border-radius:4px;font-size:0.78rem;color:var(--muted);line-height:1.5}
+.footer-note a{color:var(--info);text-decoration:none}
+.footer-note a:hover{text-decoration:underline}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.grid2{grid-template-columns:1fr}}
+.result-row{display:flex;gap:10px;padding:2px 0}
+.result-row .k{color:var(--muted);min-width:120px;display:inline-block}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:bold;letter-spacing:0.05em}
+.pill.blocked{background:#5c2c2c;color:#ff8888}
+.pill.allowed{background:#2c5c3a;color:#88ffa8}
+.pill.unknown{background:#3a3a2c;color:#ffd866}
+</style>
+</head>
+<body>
+
+<a class="back" href="index.html">← back to hub</a>
+
+<h1>
+  <img src="assets/king-of-sorrow.png" alt="" onerror="this.style.display='none'" />
+  🎛️ Simulator
+</h1>
+<p class="subtitle">King of Sorrow's Filter Tester — Inappropriate Recycling v1 — by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)</p>
+
+<div class="panel">
+  <p class="muted" style="margin:0 0 12px;font-size:0.85rem;">
+    Local-only heuristic. Predicts category and block verdict for a domain
+    based on the loaded taxonomies. <strong>No network calls are made here.</strong>
+    Everything is pattern matching and a small rule set.
+  </p>
+
+  <div class="grid2">
+    <div>
+      <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Domain to simulate:</label>
+      <input type="text" id="simInput" placeholder="e.g. reddit.com" autocomplete="off" />
+    </div>
+    <div>
+      <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Taxonomy to compare against:</label>
+      <select id="taxSelect">
+        <option value="">(loading manifest…)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:12px;">
+    <div>
+      <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Observed verdict (optional):</label>
+      <input type="text" id="observedInput" placeholder="UNBLOCKED, DNS, EXTENSION, TIMEOUT" autocomplete="off" />
+    </div>
+    <div>
+      <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">District profile:</label>
+      <select id="policySelect">
+        <option value="strict">Strict (blocks almost everything)</option>
+        <option value="moderate" selected>Moderate (default school)</option>
+        <option value="permissive">Permissive (only adult + malware)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="primary" id="simBtn">SIMULATE</button>
+    <button id="copyBtn" disabled>COPY RESULT</button>
+    <button id="clearBtn">CLEAR</button>
+  </div>
+
+  <div class="status" id="status">Ready. Enter a domain and click SIMULATE.</div>
+</div>
+
+<div id="simOut" class="output">No simulation run yet.</div>
+
+<h2>Rules Reference</h2>
+<div class="panel">
+  <p class="muted" style="margin:0 0 10px;font-size:0.85rem;">
+    These are the pattern rules the simulator uses to guess a category. They're
+    meant to be readable and editable — if a rule gives a bad guess, change it
+    here and refresh.
+  </p>
+  <details>
+    <summary>Show pattern rules (heuristic)</summary>
+    <pre id="rulesOut" class="output" style="margin-top:10px;"></pre>
+  </details>
+</div>
+
+<div class="footer-note">
+  <strong>🐾 King of Sorrow's Filter Tester</strong> — Inappropriate Recycling v1<br>
+  by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)<br>
+  Discord: <a href="https://discord.gg/gnndNWXZtC" target="_blank" rel="noopener">gnndNWXZtC</a>
+  · Repo: <a href="https://github.com/interloper-mym/KING-O-SORROW-S-FILTER-TESTER" target="_blank" rel="noopener">KING-O-SORROW-S-FILTER-TESTER</a><br>
+  <br>
+  <em>No network calls. The simulator only reads the domain you type and the taxonomies you've already loaded. It's a heuristic, not a promise. Your school may differ.</em>
+</div>
+
+<script src="js/shared.js"></script>
+<script src="js/api.js"></script>
+<script src="js/render.js"></script>
+<script>
+(function() {
+  /* ---------------- ELEMENTS ---------------- */
+  const simInput       = document.getElementById("simInput");
+  const taxSelect      = document.getElementById("taxSelect");
+  const observedInput  = document.getElementById("observedInput");
+  const policySelect   = document.getElementById("policySelect");
+  const simBtn         = document.getElementById("simBtn");
+  const copyBtn        = document.getElementById("copyBtn");
+  const clearBtn       = document.getElementById("clearBtn");
+  const statusEl       = document.getElementById("status");
+  const simOut         = document.getElementById("simOut");
+  const rulesOut       = document.getElementById("rulesOut");
+
+  let MANIFEST = null;
+  let LOADED = {};
+  let lastText = "";
+
+  /* ---------------- MOOD ---------------- */
+  if (KOS.getMood() === "sorrow") document.body.classList.add("mood-sorrow");
+
+  /* ============================================================
+     PATTERN RULES
+     ------------------------------------------------------------
+     Each rule = { match: RegExp, category: string, note?: string }
+     The simulator walks the rules top to bottom and uses the first match.
+     ============================================================ */
+  const RULES = [
+    // Adult / furry
+    { match: /(e621|e926|furaffinity|furry|yiff|e6ai|inkbunny|sofurry|f-list|fchan)/i, category: "porn / adult", note: "Furry ecosystem — almost always blocked." },
+    { match: /(porn|xxx|nsfw|hentai|nude|sex|adult)/i, category: "porn / adult", note: "Explicit keyword." },
+
+    // Games / gaming
+    { match: /(roblox|poki|crazygames|newgrounds|kongregate|miniclip|itch\.io|coolmath)/i, category: "games", note: "Game hosting." },
+    { match: /(steam|steamcommunity|store\.steampowered|epicgames|itch)/i, category: "games / shopping", note: "Game store." },
+    { match: /(discord|twitch|gamejolt)/i, category: "games / chat", note: "Gaming-adjacent platforms." },
+
+    // Streaming / media
+    { match: /(youtube|twitch|netflix|hulu|disney|vimeo|dailymotion|spotify|soundcloud|crunchyroll)/i, category: "audio-video / streaming", note: "Streaming platform." },
+
+    // Social / chat
+    { match: /(twitter|x\.com|facebook|instagram|tiktok|snapchat|reddit|discord|telegram|whatsapp|messenger|tumblr|pinterest|linkedin|mastodon|bsky)/i, category: "forums.social_networking", note: "Social platform." },
+
+    // AI tools
+    { match: /(chatgpt|claude|gemini|perplexity|character\.ai|poe\.com|you\.com|midjourney|civitai|leonardo|openart|anthropic|openai)/i, category: "artificial-intelligence", note: "AI service." },
+
+    // Proxy / bypass
+    { match: /(proxy|corsproxy|12ft|thingproxy|allorigins|r\.jina|rammerhead)/i, category: "security.proxy", note: "Proxy or CORS bypass." },
+
+    // Search
+    { match: /(google|bing|yahoo|duckduckgo|search)/i, category: "search", note: "Search engine." },
+
+    // Code / dev
+    { match: /(github|gitlab|codeberg|bitbucket|stackoverflow|stackexchange|quora|medium)/i, category: "computers / education", note: "Code hosting / Q&A." },
+    { match: /(npmjs|jsdelivr|unpkg|esm\.sh|cdnjs|jsdelivr)/i, category: "computers / cdn", note: "Package / CDN." },
+
+    // Education
+    { match: /(wikipedia|archive|khanacademy|canvas|desmos|wolfram|schoology|quizlet|brainly|classroom|docs\.google|drive\.google|khan)/i, category: "education", note: "Education tool." },
+
+    // Shopping / snacks
+    { match: /(amazon|ebay|etsy|walmart|target)/i, category: "shopping", note: "Shopping." },
+    { match: /(pizza|burger|tacobell|mcdonalds|food|doordash|grubhub|ubereats)/i, category: "family.food", note: "Food delivery / restaurant." },
+
+    // Fanfic / fandom
+    { match: /(fanfiction|archiveofourown|wattpad|fandom|tvtropes|myanimelist|anilist|bulbapedia)/i, category: "entertainment / forums", note: "Fandom." },
+
+    // News / reference
+    { match: /(cnn|bbc|nytimes|reuters|apnews|npr)/i, category: "news", note: "News site." },
+
+    // Government / org
+    { match: /(gov|\.mil|state\.[a-z]{2}\.us)/i, category: "government", note: "Government." },
+  ];
+
+  /* ============================================================
+     POLICY PROFILES
+     ------------------------------------------------------------
+     Which categories are "typically blocked" for each profile.
+     Matched against taxonomy category names by substring.
+     ============================================================ */
+  const POLICIES = {
+    strict: {
+      label: "Strict",
+      blockedSubstrings: [
+        "porn", "adult", "sex", "mature", "gambling", "games", "violence", "hate",
+        "weapons", "drugs", "alcohol", "tobacco", "marijuana", "proxy", "hacking",
+        "warez", "malware", "phishing", "spam", "suspicious", "dating", "chat",
+        "social", "streaming", "audio", "video", "entertainment", "forums"
+      ]
+    },
+    moderate: {
+      label: "Moderate",
+      blockedSubstrings: [
+        "porn", "adult", "sex", "mature", "gambling", "violence", "hate",
+        "weapons", "drugs", "alcohol", "tobacco", "marijuana", "proxy", "hacking",
+        "warez", "malware", "phishing", "dating"
+      ]
+    },
+    permissive: {
+      label: "Permissive",
+      blockedSubstrings: [
+        "porn", "adult", "sex", "mature", "malware", "phishing"
+      ]
+    }
+  };
+
+  /* ============================================================
+     SIMULATION
+     ============================================================ */
+  function stripProtocol(domain) {
+    let d = String(domain).trim().toLowerCase();
+    d = d.replace(/^https?:\/\//i, "");
+    d = d.split("/")[0];
+    d = d.split("?")[0];
+    d = d.split("#")[0];
+    return d;
+  }
+
+  function guessCategory(domain) {
+    for (const r of RULES) {
+      if (r.match.test(domain)) {
+        return { category: r.category, note: r.note || "", rule: String(r.match) };
+      }
+    }
+    return { category: "general / not reviewed", note: "No pattern matched.", rule: "(none)" };
+  }
+
+  function policyFor(category, policyKey) {
+    const pol = POLICIES[policyKey] || POLICIES.moderate;
+    const catLower = category.toLowerCase();
+    for (const sub of pol.blockedSubstrings) {
+      if (catLower.indexOf(sub) !== -1) {
+        return { blocked: true, reason: "Matches policy block substring '" + sub + "'", profile: pol.label };
+      }
+    }
+    return { blocked: false, reason: "No policy block substring matched", profile: pol.label };
+  }
+
+  async function simulate() {
+    const raw = simInput.value.trim();
+    if (!raw) { KOS.setStatus(statusEl, "Enter a domain first.", "bad"); return; }
+
+    const domain = stripProtocol(raw);
+    const observed = observedInput.value.trim();
+    const policyKey = policySelect.value;
+    const taxKey = taxSelect.value;
+
+    simBtn.disabled = true;
+    copyBtn.disabled = true;
+    KOS.setStatus(statusEl, "Simulating " + domain + " …", "working");
+
+    const guess = guessCategory(domain);
+    const policy = policyFor(guess.category, policyKey);
+
+    // If an observed verdict is provided, prefer it as ground truth for verdict
+    let verdictSource = "heuristic";
+    let finalVerdict = policy.blocked;
+    if (observed) {
+      verdictSource = "observed";
+      const up = observed.toUpperCase();
+      if (up.includes("UNBLOCK") || up.includes("ALLOW")) finalVerdict = false;
+      else if (up.includes("BLOCK") || up.includes("DNS") || up.includes("EXTENSION") || up.includes("TIMEOUT")) finalVerdict = true;
+    }
+
+    // If we have a taxonomy loaded for the selected key, try to find a category entry
+    // whose name contains one of the guess category's keywords, to enrich.
+    let taxonomyMatches = [];
+    if (taxKey && LOADED[taxKey]) {
+      const rows = normalizeTaxonomy(LOADED[taxKey]);
+      const needles = guess.category.split(/[\/\s]+/).filter(x => x.length > 2);
+      for (const row of rows) {
+        const lower = row.name.toLowerCase();
+        for (const n of needles) {
+          if (lower.indexOf(n) !== -1) {
+            taxonomyMatches.push({ num: row.num, name: row.name, flag: row.flag });
+            break;
+          }
+        }
+      }
+    }
+
+    // Build text output
+    let text = "";
+    text += "=== SIMULATOR RESULT ===\n";
+    text += "Domain:         " + domain + "\n";
+    text += "Date:           " + KOS.timestamp() + "\n";
+    text += "Policy profile: " + policy.profile + "\n";
+    text += "Byline:         " + KOS.BYLINE + "\n\n";
+
+    text += "--- Guess ---\n";
+    text += "Category:       " + guess.category + "\n";
+    if (guess.note) text += "Note:           " + guess.note + "\n";
+    text += "Matched rule:   " + guess.rule + "\n\n";
+
+    text += "--- Verdict ---\n";
+    text += "Blocked:        " + (finalVerdict ? "YES" : "NO") + "  (source: " + verdictSource + ")\n";
+    if (verdictSource === "heuristic") {
+      text += "Policy note:    " + policy.reason + "\n";
+    } else {
+      text += "Observed:       " + observed + "\n";
+      if (policy.blocked !== finalVerdict) {
+        text += "Divergence:     policy says " + (policy.blocked ? "BLOCKED" : "ALLOWED") + ", observation says the opposite.\n";
+      }
+    }
+    text += "\n";
+
+    if (taxKey) {
+      text += "--- Taxonomy cross-reference (" + taxKey + ") ---\n";
+      if (!LOADED[taxKey]) text += "(not loaded — click a taxonomy tab first)\n";
+      else if (!taxonomyMatches.length) text += "(no matching entries in " + taxKey + ")\n";
+      else {
+        for (const m of taxonomyMatches.slice(0, 12)) {
+          text += "  " + String(m.num).padStart(6, " ") + "  " + m.name +
+            (m.flag != null ? "  [" + (m.flag ? "blocked" : "allowed") + "]" : "") + "\n";
+        }
+        if (taxonomyMatches.length > 12) text += "  … " + (taxonomyMatches.length - 12) + " more\n";
+      }
+      text += "\n";
+    }
+
+    text += "— " + KOS.PROJECT + " · " + KOS.VERSION + "\n";
+    text += "(Local-only. No network calls made.)\n";
+    lastText = text;
+
+    // HTML render
+    let html = "";
+    html += "<div class='result-row'><span class='k'>Domain:</span> <span class='ok'>" + KOS.escapeHtml(domain) + "</span></div>";
+    html += "<div class='result-row'><span class='k'>Guess category:</span> <span class='info'>" + KOS.escapeHtml(guess.category) + "</span></div>";
+    if (guess.note) html += "<div class='result-row'><span class='k'>Rule note:</span> <span class='muted'>" + KOS.escapeHtml(guess.note) + "</span></div>";
+    html += "<div class='result-row'><span class='k'>Verdict:</span> <span class='pill " +
+      (finalVerdict ? "blocked" : "allowed") + "'>" +
+      (finalVerdict ? "BLOCKED" : "ALLOWED") + "</span>" +
+      " <span class='muted'>(source: " + KOS.escapeHtml(verdictSource) + ")</span></div>";
+    html += "<div class='result-row'><span class='k'>Policy profile:</span> " + KOS.escapeHtml(policy.profile) + "</div>";
+    if (verdictSource === "heuristic") {
+      html += "<div class='result-row'><span class='k'>Policy reason:</span> <span class='muted'>" + KOS.escapeHtml(policy.reason) + "</span></div>";
+    }
+    if (observed) {
+      html += "<div class='result-row'><span class='k'>Observed:</span> <span class='warn'>" + KOS.escapeHtml(observed) + "</span></div>";
+    }
+    if (taxKey && taxonomyMatches.length) {
+      html += "<div class='result-row' style='margin-top:8px'><span class='k'>Taxonomy (" + KOS.escapeHtml(taxKey) + "):</span></div>";
+      for (const m of taxonomyMatches.slice(0, 12)) {
+        html += "<div class='result-row'><span class='num muted' style='min-width:60px;display:inline-block;text-align:right'>" +
+          String(m.num).padStart(5, " ") + "</span>  <span>" + KOS.escapeHtml(m.name) + "</span>" +
+          (m.flag != null ? " <span class='" + (m.flag ? "bad" : "ok") + "'>[" + (m.flag ? "blocked" : "allowed") + "]</span>" : "") +
+          "</div>";
+      }
+    }
+    html += "<div class='muted' style='margin-top:12px;font-size:11px'>Local-only. No network calls made.</div>";
+    simOut.innerHTML = html;
+
+    KOS.setStatus(statusEl, "Simulated. Verdict: " + (finalVerdict ? "BLOCKED" : "ALLOWED") + " (source: " + verdictSource + ")", "ok");
+    simBtn.disabled = false;
+    copyBtn.disabled = false;
+  }
+
+  /* ============================================================
+     RULES REFERENCE
+     ============================================================ */
+  function renderRules() {
+    let t = "";
+    t += "Pattern rules (first match wins):\n\n";
+    for (const r of RULES) {
+      t += "  " + String(r.match).padEnd(80, " ") + " → " + r.category + "\n";
+    }
+    t += "\nPolicy profiles (substring blocks against category name):\n\n";
+    for (const k of Object.keys(POLICIES)) {
+      t += "  [" + k + "] " + POLICIES[k].label + ":\n";
+      for (const s of POLICIES[k].blockedSubstrings) t += "      • " + s + "\n";
+      t += "\n";
+    }
+    rulesOut.textContent = t;
+  }
+
+  /* ============================================================
+     NORMALIZE TAXONOMY (same as reference.html)
+     ============================================================ */
+  function normalizeTaxonomy(data) {
+    const rows = [];
+    if (Array.isArray(data)) {
+      for (const item of data) {
+        if (Array.isArray(item)) rows.push({ num: item[0], name: String(item[1]), flag: item[2] });
+        else if (typeof item === "object" && item) {
+          if ("CategoryNumber" in item) rows.push({ num: item.CategoryNumber, name: item.CategoryName || item.name || String(item.CategoryNumber), flag: item.Allow === "0" || item.Allow === 0 || item.blocked === true });
+          else if ("category_number" in item) rows.push({ num: item.category_number, name: item.name || item.category || String(item.category_number), flag: item.blocked });
+          else if ("num" in item && "name" in item) rows.push({ num: item.num, name: item.name, flag: item.blocked });
+        }
+      }
+    } else if (data && typeof data === "object") {
+      if (data.web) for (const k of Object.keys(data.web)) {
+        const v = data.web[k];
+        rows.push({ num: v.num != null ? v.num : k, name: (v.cat ? v.cat + " / " : "") + (v.name || ""), flag: v.blocked });
+      }
+      if (data.ai) for (const k of Object.keys(data.ai)) {
+        const v = data.ai[k];
+        rows.push({ num: v.num != null ? v.num : k, name: "[ai] " + (v.cat ? v.cat + " / " : "") + (v.name || ""), flag: v.blocked });
+      }
+      if (!data.web && !data.ai) for (const k of Object.keys(data)) {
+        const v = data[k];
+        if (Array.isArray(v)) rows.push({ num: k, name: String(v[0]), flag: v[1] });
+        else if (v && typeof v === "object") rows.push({ num: k, name: v.category || v.name || JSON.stringify(v), flag: v.blocked });
+        else rows.push({ num: k, name: String(v), flag: null });
+      }
+    }
+    return rows;
+  }
+
+  /* ============================================================
+     BIND
+     ============================================================ */
+  simBtn.addEventListener("click", simulate);
+  simInput.addEventListener("keydown", (e) => { if (e.key === "Enter" && !simBtn.disabled) simulate(); });
+
+  copyBtn.addEventListener("click", () => { if (lastText) KOS.copyToClipboard(lastText, copyBtn); });
+
+  clearBtn.addEventListener("click", () => {
+    simInput.value = "";
+    observedInput.value = "";
+    simOut.textContent = "No simulation run yet.";
+    lastText = "";
+    copyBtn.disabled = true;
+    KOS.setStatus(statusEl, "Ready. Enter a domain and click SIMULATE.", "muted");
+  });
+
+  taxSelect.addEventListener("change", async () => {
+    const key = taxSelect.value;
+    if (!key) return;
+    if (!LOADED[key]) {
+      KOS.setStatus(statusEl, "Loading taxonomy " + key + " …", "working");
+      const data = await KOS.loadTaxonomy(key);
+      if (data) {
+        LOADED[key] = data;
+        KOS.setStatus(statusEl, "Loaded " + key + " — " + normalizeTaxonomy(data).length + " entries.", "ok");
+      } else {
+        KOS.setStatus(statusEl, "Failed to load " + key + ".", "bad");
+      }
+    }
+  });
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  (async () => {
+    renderRules();
+    MANIFEST = await KOS.loadManifest();
+    if (!MANIFEST) {
+      taxSelect.innerHTML = '<option value="">(no manifest)</option>';
+      KOS.setStatus(statusEl, "Could not load manifest. Simulator still works without it.", "warn");
+      return;
+    }
+    taxSelect.innerHTML = '<option value="">(none — heuristic only)</option>';
+    for (const key of Object.keys(MANIFEST)) {
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = key;
+      taxSelect.appendChild(opt);
+    }
+    KOS.setStatus(statusEl, "Ready. " + Object.keys(MANIFEST).length + " taxonomies available.", "muted");
+  })();
+})();
+</script>
+</body>
+</html>
