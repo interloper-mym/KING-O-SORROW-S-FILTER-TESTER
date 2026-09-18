@@ -1,18 +1,24 @@
 /* ============================================================
    King of Sorrow's Filter Tester
-   Inappropriate Recycling v1 — by interloper-mym
+   Inappropriate Recycling v1
+   by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)
    File: js/shared.js
-   Purpose: Shared utilities for every page.
+   Purpose: Shared utilities for every page. Fetch, report,
+            status, clipboard, downloads, taxonomy loader,
+            proxy loader, securly profile loader, mood, byline.
    ============================================================ */
 
-/* ---------- CORE FETCH ---------- */
-/**
- * fetch() with an abort timer.
- * @param {string} url
- * @param {number} ms - timeout in milliseconds
- * @param {object} [opts] - fetch options
- * @returns {Promise<Response>}
- */
+/* ============================================================
+   PROJECT CONSTANTS
+   ============================================================ */
+const KOS_PROJECT = "King of Sorrow's Filter Tester";
+const KOS_VERSION = "Inappropriate Recycling v1";
+const KOS_BYLINE  = "by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)";
+const KOS_HEADER  = KOS_PROJECT + " — " + KOS_VERSION + " — " + KOS_BYLINE;
+
+/* ============================================================
+   CORE FETCH
+   ============================================================ */
 function fetchWithTimeout(url, ms, opts) {
   return new Promise((resolve, reject) => {
     const controller = new AbortController();
@@ -24,24 +30,21 @@ function fetchWithTimeout(url, ms, opts) {
   });
 }
 
-/* ---------- SLEEP ---------- */
+/* ============================================================
+   SLEEP + STOP
+   ============================================================ */
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-/* ---------- STOP FLAG ---------- */
 const STOP_STATE = { stopped: false };
-function checkStop() {
-  if (STOP_STATE.stopped) throw new Error("STOPPED_BY_USER");
-}
-function resetStop() {
-  STOP_STATE.stopped = false;
-}
-function requestStop() {
-  STOP_STATE.stopped = true;
-}
+function checkStop()   { if (STOP_STATE.stopped) throw new Error("STOPPED_BY_USER"); }
+function resetStop()   { STOP_STATE.stopped = false; }
+function requestStop() { STOP_STATE.stopped = true; }
 
-/* ---------- HTML ESCAPE ---------- */
+/* ============================================================
+   HTML ESCAPE
+   ============================================================ */
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -51,7 +54,11 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
-/* ---------- REPORT BUILDER ---------- */
+/* ============================================================
+   REPORT BUILDER
+   Every page can call REPORT.ok() / REPORT.header() / REPORT.note()
+   and it renders into whatever DOM element it was initialised with.
+   ============================================================ */
 const REPORT = {
   lines: [],
   json: {},
@@ -114,14 +121,18 @@ const REPORT = {
   }
 };
 
-/* ---------- STATUS BAR ---------- */
+/* ============================================================
+   STATUS BAR
+   ============================================================ */
 function setStatus(el, text, cls) {
   if (!el) return;
   el.textContent = text;
   el.className = cls || "muted";
 }
 
-/* ---------- CLIPBOARD ---------- */
+/* ============================================================
+   CLIPBOARD
+   ============================================================ */
 async function copyToClipboard(text, buttonEl) {
   const original = buttonEl ? buttonEl.textContent : null;
   try {
@@ -132,7 +143,6 @@ async function copyToClipboard(text, buttonEl) {
     }
     return true;
   } catch (e) {
-    // Fallback for non-secure contexts
     try {
       const ta = document.createElement("textarea");
       ta.value = text;
@@ -157,7 +167,9 @@ async function copyToClipboard(text, buttonEl) {
   }
 }
 
-/* ---------- JSON DOWNLOAD ---------- */
+/* ============================================================
+   JSON DOWNLOAD
+   ============================================================ */
 function downloadJSON(data, filename) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -170,30 +182,55 @@ function downloadJSON(data, filename) {
   URL.revokeObjectURL(url);
 }
 
-/* ---------- TAXONOMY LOADER ---------- */
-/**
- * Fetches a taxonomy from /data/taxonomies.json on demand.
- * Caches it in-memory so subsequent calls are instant.
- * @param {string} key - e.g. "fortiguard", "goguardian", "lightspeed"
- * @returns {Promise<any>}
- */
+/* ============================================================
+   TAXONOMY LOADER (manifest-based)
+   ------------------------------------------------------------
+   data/taxonomies.json is a tiny manifest:
+     { "_by": "...", "files": { "fortiguard": "data/fortiguard.json", ... } }
+   On first call, the manifest is fetched and cached. Then the
+   requested taxonomy file is fetched and cached individually.
+   ============================================================ */
 const TAXONOMY_CACHE = {};
-async function loadTaxonomy(key) {
-  if (TAXONOMY_CACHE[key]) return TAXONOMY_CACHE[key];
+let TAXONOMY_MANIFEST = null;
+
+async function loadManifest() {
+  if (TAXONOMY_MANIFEST) return TAXONOMY_MANIFEST;
   try {
     const res = await fetchWithTimeout("data/taxonomies.json", 10000, { mode: "cors" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const all = await res.json();
-    TAXONOMY_CACHE.__all = all;
-    for (const k of Object.keys(all)) TAXONOMY_CACHE[k] = all[k];
-    return TAXONOMY_CACHE[key];
+    TAXONOMY_MANIFEST = all.files || {};
+    return TAXONOMY_MANIFEST;
   } catch (e) {
-    console.warn("loadTaxonomy failed:", e);
+    console.warn("loadManifest failed:", e);
     return null;
   }
 }
 
-/* ---------- PROXY DATABASE LOADER ---------- */
+async function loadTaxonomy(key) {
+  if (TAXONOMY_CACHE[key]) return TAXONOMY_CACHE[key];
+  const manifest = await loadManifest();
+  if (!manifest) return null;
+  const path = manifest[key];
+  if (!path) {
+    console.warn("No manifest entry for taxonomy key: " + key);
+    return null;
+  }
+  try {
+    const res = await fetchWithTimeout(path, 10000, { mode: "cors" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    TAXONOMY_CACHE[key] = data;
+    return data;
+  } catch (e) {
+    console.warn("loadTaxonomy failed for " + key + ":", e);
+    return null;
+  }
+}
+
+/* ============================================================
+   PROXY DATABASE LOADER
+   ============================================================ */
 let PROXY_CACHE = null;
 async function loadProxies() {
   if (PROXY_CACHE) return PROXY_CACHE;
@@ -208,7 +245,9 @@ async function loadProxies() {
   }
 }
 
-/* ---------- SECURLY PROFILE LOADER ---------- */
+/* ============================================================
+   SECURLY PROFILE LOADER
+   ============================================================ */
 let SECURLY_PROFILE_CACHE = null;
 async function loadSecurlyProfile() {
   if (SECURLY_PROFILE_CACHE) return SECURLY_PROFILE_CACHE;
@@ -223,7 +262,9 @@ async function loadSecurlyProfile() {
   }
 }
 
-/* ---------- MOOD ---------- */
+/* ============================================================
+   MOOD
+   ============================================================ */
 function getMood() {
   return localStorage.getItem("kos_mood") || "normal";
 }
@@ -233,33 +274,53 @@ function setMood(sorrow) {
   else        document.body.classList.remove("mood-sorrow");
 }
 
-/* ---------- QUERY STRING ---------- */
+/* ============================================================
+   QUERY STRING + TIMESTAMP
+   ============================================================ */
 function qs(name) {
   return new URLSearchParams(window.location.search).get(name);
 }
-
-/* ---------- TIME FORMAT ---------- */
 function timestamp() {
   return new Date().toISOString();
 }
 
-/* ---------- EXPOSE (optional convenience) ---------- */
+/* ============================================================
+   GLOBAL EXPOSE
+   ============================================================ */
 window.KOS = {
+  /* constants */
+  PROJECT: KOS_PROJECT,
+  VERSION: KOS_VERSION,
+  BYLINE:  KOS_BYLINE,
+  HEADER:  KOS_HEADER,
+
+  /* utilities */
   fetchWithTimeout,
   sleep,
   checkStop,
   resetStop,
   requestStop,
   escapeHtml,
+
+  /* report + status */
   REPORT,
   setStatus,
+
+  /* clipboard + download */
   copyToClipboard,
   downloadJSON,
+
+  /* loaders */
+  loadManifest,
   loadTaxonomy,
   loadProxies,
   loadSecurlyProfile,
+
+  /* mood */
   getMood,
   setMood,
+
+  /* misc */
   qs,
   timestamp
 };
