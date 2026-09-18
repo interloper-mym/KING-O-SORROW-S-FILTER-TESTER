@@ -1,0 +1,366 @@
+{
+  "_by": "by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)",
+  "_purpose": "Proxy fingerprint database. Each entry describes a proxy's identifying DOM/meta/script signatures so the tester can match a live page against known proxies.",
+  "proxies": [
+    {
+      "proxyName": "frosted_browser",
+      "targetElements": [
+        { "target": "meta[name='description'][content*='Frosted']" },
+        { "target": "link[rel='modulepreload'][href*='/baremux/']" },
+        { "target": "link[rel='modulepreload'][href*='/libcurl/']" }
+      ]
+    },
+    {
+      "proxyName": "petezah_proxy",
+      "targetElements": [
+        { "target": "h1", "content": "PeteZah" },
+        { "target": "input[value='petezah://newtab']" },
+        { "target": "meta[property='og:url'][content*='hypestudy.com']" }
+      ]
+    },
+    {
+      "proxyName": "catclass",
+      "targetElements": [
+        { "target": "meta[name='description'][content*='Catclass']" },
+        { "target": "script[src*='/baremux/index.js']" },
+        { "target": "a[href='https://links.catclass.space']" }
+      ]
+    },
+    {
+      "proxyName": "xylora",
+      "targetElements": [
+        { "target": "meta[name='description'][content*='xylora']" },
+        { "target": "title", "content": "xylora", "substringMatch": true },
+        { "target": "script[src*='/storage/js/c.js']" }
+      ]
+    },
+    {
+      "proxyName": "luminos",
+      "targetElements": [
+        { "target": "title", "content": "uminalOS", "substringMatch": true },
+        { "target": "link[href='https://luminal.cc/']" },
+        { "target": "meta[property='og:title'][content='Luminal']" }
+      ]
+    },
+    {
+      "proxyName": "boredom_v3",
+      "targetElements": [
+        { "target": "meta[name='application-name'][content='Boredom Arcade']" },
+        { "target": "form#uv-form h1", "content": "Boredom V3" },
+        { "target": "input#uv-address" }
+      ]
+    },
+    {
+      "proxyName": "onyxos",
+      "targetElements": [
+        { "target": "title", "content": "OnyxOS" },
+        { "target": "div#watermark", "content": "ONYXOS" },
+        { "target": "script[src*='core/onyx-sync.js']" }
+      ]
+    },
+    {
+      "proxyName": "starlight",
+      "targetElements": [
+        { "target": "footer > span.link", "content": "Starlight" },
+        { "target": "div.settings div.stg-section span.section-text", "content": "Starlight v2 is a site designed", "substringMatch": true },
+        { "target": "div.sections[data-section='controls'] span.section-text", "content": "Launch starlight in an about:blank window" }
+      ]
+    },
+    {
+      "proxyName": "strawberry_proxy",
+      "targetElements": [
+        { "target": "title", "content": "Strawberry" },
+        { "target": "span#lunar-scheme", "content": "strawberry://" },
+        { "target": "iframe#proxy-frame" }
+      ]
+    },
+    {
+      "proxyName": "vapor_v4",
+      "targetElements": [
+        { "target": "iframe#content-frame" },
+        { "target": "button#tab-cloak-btn" },
+        { "target": "meta[content='IXL Learning']" }
+      ]
+    },
+    {
+      "proxyName": "vaporized_educational",
+      "targetElements": [
+        { "target": "title", "content": "Educational - Empowering Academic Excellence Through Interactive Learning" },
+        { "target": "div.quiz-section" }
+      ]
+    },
+    {
+      "proxyName": "daydreamX",
+      "targetElements": [
+        { "target": "meta[content='Your favorite Browser in a browser']" },
+        { "target": "meta[content*='Daydream Security Browser']" }
+      ]
+    },
+    {
+      "proxyName": "void_netwpork_v5",
+      "targetElements": [
+        { "target": ".holographic-title", "content": "Void Network V5" },
+        { "target": "input[placeholder*='Search for Games/Apps']" }
+      ]
+    },
+    {
+      "proxyName": "velara",
+      "targetElements": [
+        { "target": "h1", "content": "Welcome to Velara" },
+        { "target": "input[placeholder='Search the web freely']" }
+      ]
+    },
+    {
+      "proxyName": "frogies_arcade_v4",
+      "targetElements": [
+        { "target": ".maintitle", "content": "frogie's arcade v4" },
+        { "target": "input[placeholder*='search anything']" }
+      ]
+    },
+    {
+      "proxyName": "kubaz",
+      "targetElements": [
+        { "target": "title", "content": "Kuba OS" },
+        { "target": ".logo", "content": "Kuba OS" }
+      ]
+    },
+    {
+      "proxyName": "truffled_new_domain",
+      "targetElements": [
+        { "target": "meta[name='description'][content*='Truffled']" },
+        { "target": "meta[property='og:title'][content*='Truffled']" },
+        { "target": "#seo-content h1", "content": "One secure place for all your learning" }
+      ]
+    },
+    {
+      "proxyName": "axiom_proxy",
+      "targetElements": [
+        { "target": "h2", "content": "Welcome to Axiom" },
+        { "target": "link[href='./styles/dust.css']" },
+        { "target": "div#mode-simple" }
+      ]
+    },
+    {
+      "proxyName": "nexora_link_finder",
+      "targetElements": [
+        { "target": "h1", "content": "Find a Working Link!" },
+        { "target": "h2", "content": "What blocks your school sites?" },
+        { "target": "meta[name='google-adsense-account'][content='ca-pub-6990835730345530']" }
+      ]
+    },
+    {
+      "proxyName": "zinko_inc",
+      "targetElements": [
+        { "target": "h1", "content": "zinko inc" },
+        { "target": "script[src*='/api/proxy-config.js']" },
+        { "target": "script[src*='tab-cloak.js']" }
+      ]
+    },
+    {
+      "proxyName": "lucide",
+      "targetElements": [
+        { "target": ".brand-wordmark", "content": "lucide" },
+        { "target": "#chrome-omnibox[placeholder='Search or type a URL']" }
+      ]
+    },
+    {
+      "proxyName": "cherri",
+      "targetElements": [
+        { "target": ".hometitle", "content": "Cherri" },
+        { "target": "input[placeholder='Search for anything...']" }
+      ]
+    },
+    {
+      "proxyName": "edurocks",
+      "targetElements": [
+        { "target": "meta[content='EDUrocks']" },
+        { "target": "a[href='https://www.instagram.com/edurocksubg/']" }
+      ]
+    },
+    {
+      "proxyName": "frogie_arcade_v4_new",
+      "targetElements": [
+        { "target": "input#teacher-snitching-engine" },
+        { "target": "script[src*='frog/bundle.js']" }
+      ]
+    },
+    {
+      "proxyName": "johnson_education",
+      "targetElements": [
+        { "target": "h1#maintitle", "content": "Johnson Education" },
+        { "target": "input#teacher-lookup" }
+      ]
+    },
+    {
+      "proxyName": "hype_study",
+      "targetElements": [
+        { "target": "meta[content*='HypeStudy']" },
+        { "target": "meta[content*='Secure Study Platform']" }
+      ]
+    },
+    {
+      "proxyName": "ubghub",
+      "targetElements": [
+        { "target": "a[href='/']", "content": "UBGHub" },
+        { "target": "meta[content*='unblocked games']" }
+      ]
+    },
+    {
+      "proxyName": "dogeub",
+      "targetElements": [
+        { "target": "title", "content": "v5-static", "substringMatch": true },
+        { "target": "input[placeholder='Search Google or type URL']" }
+      ]
+    },
+    {
+      "proxyName": "daybits_study",
+      "targetElements": [
+        { "target": "title#window_title", "content": "Study.com" },
+        { "target": "div[data-url='zones']" }
+      ]
+    },
+    {
+      "proxyName": "ccported",
+      "targetElements": [
+        { "target": "title", "content": "CCPorted" },
+        { "target": "a[href='/tab-cloaker']" }
+      ]
+    },
+    {
+      "proxyName": "aguse",
+      "targetElements": [
+        { "target": "form[name='aguse_form']" },
+        { "target": "img[alt='aguse gateway']" }
+      ]
+    },
+    {
+      "proxyName": "beaver_unblocker",
+      "targetElements": [
+        { "target": "title", "content": "Beaver Unblocker" },
+        { "target": ".title", "content": "Beaver Unblocker" }
+      ]
+    },
+    {
+      "proxyName": "censor_dodge",
+      "targetElements": [
+        { "target": "a[href='http://censordodge.com'][target='blank']", "content": "Censor Dodge V1.83 BETA" },
+        { "target": "title", "content": "Censor Dodge 1.83 BETA", "substringMatch": true }
+      ]
+    },
+    {
+      "proxyName": "ludicrous",
+      "targetElements": [
+        { "target": "h1.Home_main-title__WtTWV span:first-child", "content": "Ludicrous" },
+        { "target": "meta[content='Ludicrous | A School Site']" }
+      ]
+    },
+    {
+      "proxyName": "radar_cloud",
+      "targetElements": [
+        { "target": "title", "content": "Radar Cloud" },
+        { "target": "meta[content='Radar Cloud']" }
+      ]
+    },
+    {
+      "proxyName": "surfskip",
+      "targetElements": [
+        { "target": "meta[content*='SurfSkip is the best web proxy']" },
+        { "target": "title", "content": "Surfskip | Free VPN Browser - Your Best Web Proxy" }
+      ]
+    },
+    {
+      "proxyName": "phantom_games",
+      "targetElements": [
+        { "target": "meta[content*='Phantom Games']" },
+        { "target": "title", "content": "Phantom Games" }
+      ]
+    },
+    {
+      "proxyName": "equinox_v1",
+      "targetElements": [
+        { "target": "input[placeholder='Search the web or enter a URL']" },
+        { "target": "title", "content": "Equinox V1" }
+      ]
+    },
+    {
+      "proxyName": "outred",
+      "targetElements": [
+        { "target": ".title", "content": "OutRed" },
+        { "target": "title", "content": "OutRed", "substringMatch": true }
+      ]
+    },
+    {
+      "proxyName": "math_is_fun",
+      "targetElements": [
+        { "target": "meta[content*='Math explained in easy language']" },
+        { "target": "img[alt='Math is Fun']" }
+      ]
+    },
+    {
+      "proxyName": "school_pepikutan",
+      "targetElements": [
+        { "target": ".chrome-tab-title", "content": "New tab" },
+        { "target": ".chrome-tab" }
+      ]
+    },
+    {
+      "proxyName": "test_zecro",
+      "targetElements": [
+        { "target": "title", "content": "test.zecro.de" },
+        { "target": ".chrome-tab" }
+      ]
+    },
+    {
+      "proxyName": "hp_ilove4ndan",
+      "targetElements": [
+        { "target": "title", "content": "hp.ilove4ndan.com" },
+        { "target": ".chrome-tab" }
+      ]
+    },
+    {
+      "proxyName": "politechnika_nova",
+      "targetElements": [
+        { "target": "h1.hero__title", "content": "Welcome to Ghost" },
+        { "target": "meta[content='Ghost']" }
+      ]
+    },
+    {
+      "proxyName": "unstop_browser",
+      "targetElements": [
+        { "target": "noscript", "content": "Please enable JavaScript to use this site." },
+        { "target": ".chrome-tabs" }
+      ]
+    },
+    {
+      "proxyName": "DextensifyProxy",
+      "targetElements": [
+        { "target": "title", "content": "Dextensify" },
+        { "target": "h1", "content": "Dextensify" },
+        { "target": "#buttons_container p", "content": "Detecting extensions...", "substringMatch": true },
+        { "target": "script", "content": "chrome-extension://", "substringMatch": true }
+      ]
+    },
+    {
+      "proxyName": "ExtHang3rProxy",
+      "targetElements": [
+        { "target": "title", "content": "ExtHang3r" },
+        { "target": "button#hangButton", "content": "Hang Extension!" },
+        { "target": "select#iframeSelect" }
+      ]
+    },
+    {
+      "proxyName": "asteroid",
+      "targetElements": [
+        { "target": "meta[content*='Math explained in easy language']" },
+        { "target": "title", "content": "Inbox" }
+      ]
+    },
+    {
+      "proxyName": "tinf足0il",
+      "targetElements": [
+        { "target": ".heading > h1", "content": "Tinf足0il" },
+        { "target": "title", "content": "Ti足nf0足il", "substringMatch": true }
+      ]
+    }
+  ]
+}
