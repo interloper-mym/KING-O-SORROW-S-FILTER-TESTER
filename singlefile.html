@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>👑 King of Sorrow's Filter Tester — Single File</title>
+<style>
+:root{
+  --bg:#0f1019;--surface:#1a1c2b;--surface-hover:#232540;--border:#2c2e42;
+  --text:#f2f2f7;--muted:#9a9ab0;--accent:#7c5cff;--accent-hover:#9375ff;
+  --ok:#6ee787;--bad:#ff7b72;--warn:#ffd866;--info:#79c0ff;--radius:12px;
+  --sorrow:#8b2c2c;--sorrow-glow:#ff4444;
+}
+body.mood-sorrow{
+  --bg:#0a0a0f;--surface:#14141c;--surface-hover:#1c1c28;--border:#2a1a1a;
+  --accent:#8b2c2c;--accent-hover:#a83c3c;--muted:#6a6a7a;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:20px;background:var(--bg);color:var(--text);
+  font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;
+  transition:background 0.8s ease,color 0.8s ease;min-height:100vh;
+}
+h1{margin:0 0 4px;font-size:1.5rem}
+.subtitle{color:var(--muted);font-size:0.85rem;margin:4px 0 20px;font-style:italic}
+.tabs{display:flex;gap:6px;margin:16px 0 10px;flex-wrap:wrap}
+.tab{
+  background:var(--surface);border:1px solid var(--border);color:var(--text);
+  padding:8px 16px;cursor:pointer;border-radius:var(--radius);font-size:13px;
+  font-family:inherit;
+}
+.tab:hover{border-color:var(--accent)}
+.tab.active{background:var(--accent);border-color:var(--accent);color:white}
+.pane{display:none}
+.pane.active{display:block}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+input[type=text],textarea,select{
+  width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:12px 14px;border-radius:var(--radius);
+  font-family:"Courier New",monospace;font-size:13px;
+}
+textarea{min-height:100px;resize:vertical}
+input[type=text]:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent)}
+select{font-family:inherit;font-size:13px}
+.btnrow{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap;align-items:center}
+button{
+  background:var(--surface);border:1px solid var(--border);color:var(--text);
+  padding:10px 18px;border-radius:var(--radius);cursor:pointer;
+  font-size:13px;font-family:inherit;
+}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:0.5;cursor:wait}
+button.primary{background:var(--accent);border-color:var(--accent);color:white}
+button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+button.danger{background:#5c2c2c;border-color:#8c4444;color:white}
+button.danger:hover{background:#8c4444}
+.status{
+  padding:10px 14px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);margin:10px 0;min-height:2.4em;
+  font-family:"Courier New",monospace;font-size:12px;color:var(--muted);
+}
+.status.working{color:var(--warn);border-color:var(--warn)}
+.status.ok{color:var(--ok);border-color:var(--ok)}
+.status.bad{color:var(--bad);border-color:var(--bad)}
+.output{
+  background:#000;border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;font-family:"Courier New",monospace;font-size:12px;line-height:1.6;
+  min-height:120px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;
+}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.info{color:var(--info)}.muted{color:var(--muted)}
+.footer-note{
+  margin-top:20px;padding:12px;background:var(--surface);
+  border-left:3px solid var(--accent);border-radius:4px;
+  font-size:0.78rem;color:var(--muted);line-height:1.5;
+}
+.footer-note a{color:var(--info);text-decoration:none}
+.footer-note a:hover{text-decoration:underline}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.grid2{grid-template-columns:1fr}}
+.matrix-header{color:var(--muted);margin-bottom:8px}
+.matrix-row{display:flex;gap:10px;align-items:baseline;padding:2px 0}
+.matrix-emoji{width:24px;display:inline-block}
+.matrix-label{min-width:140px;display:inline-block}
+.matrix-cat{color:var(--muted);flex:1}
+.matrix-row.ok .matrix-icon{color:var(--ok)}
+.matrix-row.bad .matrix-icon{color:var(--bad)}
+.matrix-row.warn .matrix-icon{color:var(--warn)}
+.matrix-row.unknown .matrix-icon{color:var(--muted)}
+hr{border:0;border-top:1px solid var(--border);margin:10px 0}
+details{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:10px}
+summary{cursor:pointer;color:var(--info);font-size:0.85rem}
+details pre{color:var(--muted);font-size:11px;margin:8px 0 0;overflow-x:auto;max-height:200px}
+</style>
+</head>
+<body>
+
+<h1>👑 King of Sorrow's Filter Tester — Single File</h1>
+<p class="subtitle">Inappropriate Recycling v1 — by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)</p>
+
+<div class="tabs">
+  <button class="tab active" data-pane="matrix">🧪 Matrix</button>
+  <button class="tab" data-pane="securly">🩺 Securly</button>
+  <button class="tab" data-pane="proxy">🔍 Proxy</button>
+  <button class="tab" data-pane="reference">📚 Reference</button>
+  <button class="tab" data-pane="simulator">🎛️ Simulator</button>
+</div>
+
+<!-- ============================== MATRIX ============================== -->
+<div class="pane active" id="pane-matrix">
+  <div class="panel">
+    <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Domain to test:</label>
+    <input type="text" id="domainInput" placeholder="unpkg.com" autocomplete="off" />
+    <div class="btnrow">
+      <button class="primary" id="runBtn">RUN MATRIX</button>
+      <button id="copyMatrixBtn" disabled>COPY MATRIX</button>
+      <button id="clearMatrixBtn">CLEAR</button>
+    </div>
+    <div class="status" id="matrixStatus">Ready.</div>
+    <div class="output" id="matrixOut">No results yet.</div>
+  </div>
+</div>
+
+<!-- ============================== SECURLY ============================== -->
+<div class="pane" id="pane-securly">
+  <div class="panel">
+    <p class="muted" style="margin:0 0 10px;font-size:0.85rem;">
+      Paste a Securly block URL (base64 <code>url=</code> + optional <code>redirectionToken=</code>).
+    </p>
+    <textarea id="decoderInput" placeholder="https://www-4.geo.uswest2.v1api.securly.com/geo?url=..."></textarea>
+    <div class="btnrow">
+      <button class="primary" id="decodeBtn">DECODE</button>
+      <button id="clearDecoderBtn">CLEAR</button>
+    </div>
+    <div class="status" id="decoderStatus">Ready.</div>
+    <div class="output" id="decoderOut"></div>
+  </div>
+
+  <div class="panel">
+    <p class="muted" style="margin:0 0 10px;font-size:0.85rem;">
+      Enumerate known Securly endpoints (active network probe, one per second).
+    </p>
+    <div class="btnrow">
+      <button class="primary" id="enumerateBtn">ENUMERATE</button>
+    </div>
+    <div class="status" id="enumeratorStatus">Ready.</div>
+    <div class="output" id="enumeratorOut"></div>
+  </div>
+</div>
+
+<!-- ============================== PROXY ============================== -->
+<div class="pane" id="pane-proxy">
+  <div class="panel">
+    <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">URL to fingerprint:</label>
+    <input type="text" id="proxyInput" placeholder="https://example-proxy.com/" autocomplete="off" />
+    <div class="grid2" style="margin-top:12px;">
+      <div>
+        <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Fetch mode:</label>
+        <select id="proxyMode">
+          <option value="cors" selected>cors (readable)</option>
+          <option value="no-cors">no-cors (opaque)</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Database:</label>
+        <div class="muted" id="dbCount">loading proxies.json…</div>
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="primary" id="fingerprintBtn">FINGERPRINT</button>
+      <button id="clearProxyBtn">CLEAR</button>
+    </div>
+    <div class="status" id="proxyStatus">Ready.</div>
+    <div class="output" id="proxyOut">No results yet.</div>
+    <details>
+      <summary>Show raw extracted signals</summary>
+      <pre id="rawOut">(none yet)</pre>
+    </details>
+  </div>
+</div>
+
+<!-- ============================== REFERENCE ============================== -->
+<div class="pane" id="pane-reference">
+  <div class="panel">
+    <div class="grid2">
+      <div>
+        <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Search (id or name):</label>
+        <input type="text" id="searchInput" placeholder="e.g. porn, 21, proxy" autocomplete="off" />
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Taxonomy filter:</label>
+        <select id="taxSelect"><option value="">(click Load Manifest)</option></select>
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="primary" id="loadManifestBtn">LOAD MANIFEST</button>
+      <button class="primary" id="loadAllTaxBtn">LOAD ALL</button>
+      <button id="clearRefBtn">CLEAR</button>
+    </div>
+    <div class="status" id="refStatus">Ready.</div>
+    <div class="output" id="refOut">No taxonomy loaded.</div>
+  </div>
+</div>
+
+<!-- ============================== SIMULATOR ============================== -->
+<div class="pane" id="pane-simulator">
+  <div class="panel">
+    <div class="grid2">
+      <div>
+        <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Domain:</label>
+        <input type="text" id="simInput" placeholder="reddit.com" autocomplete="off" />
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Taxonomy to compare:</label>
+        <select id="simTax"><option value="">(none — heuristic only)</option></select>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:12px;">
+      <div>
+        <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Observed verdict (optional):</label>
+        <input type="text" id="observedInput" placeholder="DNS, EXTENSION, TIMEOUT…" autocomplete="off" />
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;color:var(--muted);font-size:0.85rem;">Policy profile:</label>
+        <select id="policySelect">
+          <option value="strict">Strict</option>
+          <option value="moderate" selected>Moderate</option>
+          <option value="permissive">Permissive</option>
+        </select>
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="primary" id="simBtn">SIMULATE</button>
+      <button id="clearSimBtn">CLEAR</button>
+    </div>
+    <div class="status" id="simStatus">Ready.</div>
+    <div class="output" id="simOut">No simulation yet.</div>
+  </div>
+</div>
+
+<div class="footer-note">
+  <strong>👑 King of Sorrow's Filter Tester</strong> — Inappropriate Recycling v1<br>
+  by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)<br>
+  Discord: <a href="https://discord.gg/gnndNWXZtC" target="_blank" rel="noopener">gnndNWXZtC</a>
+  · Repo: <a href="https://github.com/interloper-mym/KING-O-SORROW-S-FILTER-TESTER" target="_blank" rel="noopener">KING-O-SORROW-S-FILTER-TESTER</a><br>
+  <br>
+  <em>Single-file build. Reads data/taxonomies.json, data/proxies.json, and data/&lt;taxonomy&gt;.json on demand. Calls the KOS server for matrix runs.</em>
+</div>
+
+<script>
+/* ============================================================
+   PROJECT CONSTANTS
+   ============================================================ */
+const KOS_PROJECT = "King of Sorrow's Filter Tester";
+const KOS_VERSION = "Inappropriate Recycling v1";
+const KOS_BYLINE  = "by Airy (also known as mym, ERAM, King of Sorrow, and Swizzy)";
+
+/* ============================================================
+   CORE UTILITIES (from shared.js)
+   ============================================================ */
+function fetchWithTimeout(url, ms, opts) {
+  return new Promise((resolve, reject) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    const o = Object.assign({ signal: controller.signal, cache: "no-store" }, opts || {});
+    fetch(url, o)
+      .then(res => { clearTimeout(timer); resolve(res); })
+      .catch(e => { clearTimeout(timer); reject(e); });
+  });
+}
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+function escapeHtml(str){
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+function setStatus(el, text, cls){ if(!el) return; el.textContent = text; el.className = cls || "muted"; }
+function timestamp(){ return new Date().toISOString(); }
+function getMood(){ return localStorage.getItem("kos_mood") || "normal"; }
+async function copyToClipboard(text, buttonEl){
+  const original = buttonEl ? buttonEl.textContent : null;
+  try { await navigator.clipboard.writeText(text); }
+  catch(e) {
+    try {
+      const ta = document.createElement("textarea"); ta.value = text;
+      ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
+      ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+    } catch(e2){ return false; }
+  }
+  if (buttonEl) {
+    buttonEl.textContent = "COPIED!";
+    setTimeout(()=>{ buttonEl.textContent = original; }, 1500);
+  }
+  return true;
+}
+
+/* ============================================================
+   API (from api.js)
+   ============================================================ */
+const DEFAULT_SERVER_URL = "https://kos-filter-server.onrender.com";
+function getServerUrl(){
+  try { const s = localStorage.getItem("kos_server_url"); if (s && s.startsWith("http")) return s.replace(/\/+$/,""); }
+  catch(e){}
+  return DEFAULT_SERVER_URL;
+}
+function setServerUrl(url){
+  if (!url) return false;
+  let clean = url.trim(); if (!/^https?:\/\//i.test(clean)) clean = "https://" + clean;
+  clean = clean.replace(/\/+$/,"");
+  try { localStorage.setItem("kos_server_url", clean); return true; } catch(e){ return false; }
+}
+async function runFilters(domain, filterList, timeoutMs){
+  const t0 = performance.now();
+  if (!domain) return { ok:false, error:"Missing domain", elapsedMs:0 };
+  const payload = { domain: domain.trim() };
+  if (Array.isArray(filterList) && filterList.length) payload.filters = filterList;
+  try {
+    const res = await fetchWithTimeout(getServerUrl() + "/check", timeoutMs || 60000, {
+      method:"POST", mode:"cors",
+      headers:{ "content-type":"application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) return { ok:false, error:"HTTP " + res.status, elapsedMs: Math.round(performance.now()-t0) };
+    const data = await res.json();
+    return { ok:true, data, elapsedMs: Math.round(performance.now()-t0) };
+  } catch(e){
+    return { ok:false, error:e.message, elapsedMs: Math.round(performance.now()-t0) };
+  }
+}
+async function checkServerHealth(timeoutMs){
+  const t0 = performance.now();
+  try {
+    const res = await fetchWithTimeout(getServerUrl() + "/health", timeoutMs || 15000, { mode:"cors" });
+    const data = await res.json();
+    return { ok:true, data, elapsedMs: Math.round(performance.now()-t0) };
+  } catch(e){ return { ok:false, error:e.message, elapsedMs: Math.round(performance.now()-t0) }; }
+}
+
+/* ============================================================
+   LOADERS (manifest, taxonomy, proxies, securly profile)
+   ============================================================ */
+const TAXONOMY_CACHE = {};
+let TAXONOMY_MANIFEST = null;
+async function loadManifest(){
+  if (TAXONOMY_MANIFEST) return TAXONOMY_MANIFEST;
+  try {
+    const res = await fetchWithTimeout("data/taxonomies.json", 10000, { mode:"cors" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const all = await res.json();
+    TAXONOMY_MANIFEST = all.files || {};
+    return TAXONOMY_MANIFEST;
+  } catch(e){ console.warn("loadManifest failed:", e); return null; }
+}
+async function loadTaxonomy(key){
+  if (TAXONOMY_CACHE[key]) return TAXONOMY_CACHE[key];
+  const manifest = await loadManifest();
+  if (!manifest) return null;
+  const path = manifest[key];
+  if (!path) return null;
+  try {
+    const res = await fetchWithTimeout(path, 10000, { mode:"cors" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    TAXONOMY_CACHE[key] = data;
+    return data;
+  } catch(e){ console.warn("loadTaxonomy failed for " + key + ":", e); return null; }
+}
+let PROXY_CACHE = null;
+async function loadProxies(){
+  if (PROXY_CACHE) return PROXY_CACHE;
+  try {
+    const res = await fetchWithTimeout("data/proxies.json", 10000, { mode:"cors" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    PROXY_CACHE = await res.json();
+    return PROXY_CACHE;
+  } catch(e){ console.warn("loadProxies failed:", e); return null; }
+}
+
+/* ============================================================
+   RENDER (from render.js)
+   ============================================================ */
+const FILTER_EMOJI = {
+  fortiguard:"🛡️", lightspeed:"🚦", paloalto:"🔥", blocksiWeb:"🧱", blocksiAI:"🧱",
+  linewize:"🌐", cisco:"☁️", securly:"⚛️", goguardian:"🔒", lanschool:"🏫",
+  contentkeeper:"🧹", aristotle:"🥏", senso:"🌳", deledao:"😈", iboss:"💼",
+  sophos:"🛏️", barracuda:"🐍", qustodio:"🎙️", studentkeeper:"🧑‍🎓"
+};
+const FILTER_LABEL = {
+  fortiguard:"FortiGuard", lightspeed:"Lightspeed", paloalto:"Palo Alto",
+  blocksiWeb:"Blocksi Web", blocksiAI:"Blocksi AI", linewize:"Linewize",
+  cisco:"Cisco Umbrella", securly:"Securly", goguardian:"GoGuardian",
+  lanschool:"LanSchool", contentkeeper:"ContentKeeper", aristotle:"AristotleK12",
+  senso:"Senso Cloud", deledao:"Deledao", iboss:"iBoss", sophos:"Sophos",
+  barracuda:"Barracuda", qustodio:"Qustodio", studentkeeper:"StudentKeeper"
+};
+const FILTER_ORDER = [
+  "fortiguard","lightspeed","paloalto","blocksiWeb","blocksiAI","linewize",
+  "cisco","securly","goguardian","lanschool","contentkeeper","aristotle",
+  "senso","deledao","iboss","sophos","barracuda","qustodio"
+];
+function filterStatusIcon(result){
+  if (!result) return "❓";
+  const [cat, blocked] = result;
+  if (typeof cat === "string" && cat.toUpperCase() === "TIMEOUT") return "⏱️ Timed out";
+  if (typeof cat === "string" && cat.toUpperCase().startsWith("TOKEN_UNAVAILABLE")) return "❓ (token dead)";
+  if (typeof cat === "string" && cat.toUpperCase().includes("SERVER-ONLY")) return "❓ (server-only)";
+  if (typeof cat === "string" && cat.toUpperCase().startsWith("CORS")) return "❌ CORS/Blocked";
+  if (typeof cat === "string" && (cat.toUpperCase().includes("ERROR") || cat.toUpperCase().startsWith("DEBUG_ERROR"))) return "❌ Error";
+  if (typeof cat === "string" && cat.startsWith("(opaque")) return "❓";
+  if (blocked === true) return "❌";
+  if (blocked === false) return "✅";
+  return "❓";
+}
+function renderFilterMatrix(data){
+  if (!data || !data.results) return "No results.";
+  let out = "=== UNIVERSAL FILTER MATRIX ===\n";
+  out += "Target: " + (data.domain || "?") + "\n";
+  out += "Date:   " + (data.timestamp || timestamp()) + "\n\n";
+  for (const key of FILTER_ORDER){
+    const r = data.results[key]; if (!r) continue;
+    out += (FILTER_EMOJI[key] || "▫️") + " " + (FILTER_LABEL[key] || key) +
+      " (" + (r[0] || "?") + ") " + filterStatusIcon(r) + "\n";
+  }
+  out += "\n— " + KOS_PROJECT + " · " + KOS_VERSION + "\n";
+  return out;
+}
+function renderFilterMatrixHTML(data){
+  if (!data || !data.results) return "<div class='muted'>No results.</div>";
+  let html = "";
+  html += "<div class='matrix-header'><div><strong>Target:</strong> " + escapeHtml(data.domain || "?") + "</div>";
+  html += "<div class='muted'>" + escapeHtml(data.timestamp || timestamp()) + "</div></div><hr/>";
+  for (const key of FILTER_ORDER){
+    const r = data.results[key]; if (!r) continue;
+    const icon = filterStatusIcon(r);
+    let cls = "unknown";
+    if (icon.indexOf("✅") !== -1) cls = "ok";
+    else if (icon.indexOf("❌") !== -1) cls = "bad";
+    else if (icon.indexOf("⏱️") !== -1) cls = "warn";
+    html += "<div class='matrix-row " + cls + "'>";
+    html += "<span class='matrix-emoji'>" + (FILTER_EMOJI[key] || "▫️") + "</span>";
+    html += "<span class='matrix-label'>" + escapeHtml(FILTER_LABEL[key] || key) + "</span>";
+    html += "<span class='matrix-cat'>(" + escapeHtml(r[0] || "?") + ")</span>";
+    html += "<span class='matrix-icon'>" + escapeHtml(icon) + "</span>";
+    html += "</div>";
+  }
+  html += "<hr/><div class='muted'>Observation-only. Your school may differ.</div>";
+  return html;
+}
+
+/* ============================================================
+   TAB SWITCHING
+   ============================================================ */
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".pane").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("pane-" + tab.dataset.pane).classList.add("active");
+  });
+});
+if (getMood() === "sorrow") document.body.classList.add("mood-sorrow");
+
+/* ============================================================
+   MATRIX
+   ============================================================ */
+const domainInput = document.getElementById("domainInput");
+const runBtn      = document.getElementById("runBtn");
+const copyMatrixBtn = document.getElementById("copyMatrixBtn");
+const clearMatrixBtn = document.getElementById("clearMatrixBtn");
+const matrixStatus = document.getElementById("matrixStatus");
+const matrixOut   = document.getElementById("matrixOut");
+let lastMatrixText = "";
+
+async function runMatrix(){
+  const domain = domainInput.value.trim();
+  if (!domain) { setStatus(matrixStatus, "Enter a domain first.", "bad"); return; }
+  runBtn.disabled = true; copyMatrixBtn.disabled = true;
+  matrixOut.innerHTML = "<div class='muted'>Contacting " + escapeHtml(getServerUrl()) + " …</div>";
+  setStatus(matrixStatus, "Running every filter for " + domain + " … (Render cold start may take ~30s)", "working");
+  const res = await runFilters(domain, null, 90000);
+  if (!res.ok){
+    matrixOut.innerHTML = "<div class='bad'>Server error: " + escapeHtml(res.error) + "</div>";
+    setStatus(matrixStatus, "Failed: " + res.error + " (" + res.elapsedMs + "ms)", "bad");
+    runBtn.disabled = false; return;
+  }
+  lastMatrixText = renderFilterMatrix(res.data);
+  matrixOut.innerHTML = renderFilterMatrixHTML(res.data);
+  const n = Object.keys(res.data.results || {}).length;
+  setStatus(matrixStatus, "Done — " + n + " filters returned in " + res.elapsedMs + "ms", "ok");
+  runBtn.disabled = false; copyMatrixBtn.disabled = false;
+}
+runBtn.addEventListener("click", runMatrix);
+domainInput.addEventListener("keydown", e => { if (e.key === "Enter" && !runBtn.disabled) runMatrix(); });
+copyMatrixBtn.addEventListener("click", () => { if (lastMatrixText) copyToClipboard(lastMatrixText, copyMatrixBtn); });
+clearMatrixBtn.addEventListener("click", () => {
+  domainInput.value = ""; matrixOut.innerHTML = "No results yet."; lastMatrixText = "";
+  copyMatrixBtn.disabled = true; setStatus(matrixStatus, "Ready.", "muted");
+});
+
+/* ============================================================
+   SECURLY
+   ============================================================ */
+const decoderInput = document.getElementById("decoderInput");
+const decodeBtn    = document.getElementById("decodeBtn");
+const clearDecoderBtn = document.getElementById("clearDecoderBtn");
+const decoderStatus = document.getElementById("decoderStatus");
+const decoderOut   = document.getElementById("decoderOut");
+
+function decodeSecurlyRedirect(raw){
+  const out = { raw, params:{}, decoded:null, token:null, tokenType:null, tokenLength:0, errors:[] };
+  try {
+    const u = new URL(raw);
+    for (const [k,v] of u.searchParams.entries()) out.params[k] = v;
+    const b64 = u.searchParams.get("url");
+    if (b64){
+      try {
+        let s = b64.replace(/-/g,"+").replace(/_/g,"/"); while (s.length % 4) s += "=";
+        out.decoded = decodeURIComponent(escape(atob(s)));
+      } catch(e){ try { out.decoded = atob(b64); } catch(e2){ out.errors.push("base64 decode failed: " + e2.message); } }
+    }
+    const token = u.searchParams.get("redirectionToken");
+    if (token){
+      out.token = token; out.tokenLength = token.length;
+      if (token.split(".").length === 3) out.tokenType = "JWT (3 segments)";
+      else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) out.tokenType = "UUID";
+      else if (/^\d{10,13}$/.test(token)) out.tokenType = "timestamp (epoch)";
+      else if (/^[A-Za-z0-9+/=]+$/.test(token) && token.length > 40) out.tokenType = "base64 (opaque)";
+      else out.tokenType = "unknown";
+    }
+  } catch(e){ out.errors.push("URL parse failed: " + e.message); }
+  return out;
+}
+decodeBtn.addEventListener("click", () => {
+  const raw = decoderInput.value.trim();
+  if (!raw){ setStatus(decoderStatus, "Paste a URL first.", "bad"); return; }
+  const out = decodeSecurlyRedirect(raw);
+  let html = "";
+  html += "<div><strong>Raw:</strong> " + escapeHtml(raw.slice(0, 120)) + "</div>";
+  html += out.decoded ? "<div class='ok'><strong>Decoded:</strong> " + escapeHtml(out.decoded) + "</div>"
+                      : "<div class='bad'>Decoded: (not found)</div>";
+  if (out.token){
+    html += "<div><strong>Token:</strong> " + escapeHtml(out.token.slice(0, 60)) + "…</div>";
+    html += "<div><strong>Token type:</strong> " + escapeHtml(out.tokenType) + "</div>";
+    html += "<div><strong>Token length:</strong> " + out.tokenLength + " bytes</div>";
+  }
+  if (out.errors.length){
+    html += "<div class='bad'><strong>Errors:</strong>";
+    for (const e of out.errors) html += "<div>  " + escapeHtml(e) + "</div>";
+    html += "</div>";
+  }
+  decoderOut.innerHTML = html;
+  setStatus(decoderStatus, out.decoded ? "Decoded: " + out.decoded : "No decode.", out.decoded ? "ok" : "warn");
+});
+clearDecoderBtn.addEventListener("click", () => {
+  decoderInput.value = ""; decoderOut.innerHTML = ""; setStatus(decoderStatus, "Ready.", "muted");
+});
+
+const SECURLY_SUBDOMAINS = [
+  "block.securly.com","api.securly.com","securly.com","docs.securly.com","www.securly.com",
+  "www-1.geo.uswest2.v1api.securly.com","www-2.geo.uswest2.v1api.securly.com",
+  "www-3.geo.uswest2.v1api.securly.com","www-4.geo.uswest2.v1api.securly.com",
+  "www-filter.c4.securly.com"
+];
+const enumerateBtn = document.getElementById("enumerateBtn");
+const enumeratorStatus = document.getElementById("enumeratorStatus");
+const enumeratorOut = document.getElementById("enumeratorOut");
+enumerateBtn.addEventListener("click", async () => {
+  enumerateBtn.disabled = true; enumeratorOut.innerHTML = "";
+  setStatus(enumeratorStatus, "Enumerating 10 endpoints …", "working");
+  const results = [];
+  for (const host of SECURLY_SUBDOMAINS){
+    const t0 = performance.now();
+    try {
+      await fetchWithTimeout("https://" + host + "/", 6000, { mode:"no-cors" });
+      results.push({ host, ok:true, ms: Math.round(performance.now()-t0) });
+    } catch(e){ results.push({ host, ok:false, err:e.message }); }
+    let html = "";
+    for (const r of results){
+      html += r.ok ? "<div class='ok'>[OK] " + escapeHtml(r.host) + " → " + r.ms + "ms</div>"
+                   : "<div class='bad'>[FAIL] " + escapeHtml(r.host) + " → " + escapeHtml(r.err) + "</div>";
+    }
+    enumeratorOut.innerHTML = html;
+    await sleep(500);
+  }
+  const okCount = results.filter(r => r.ok).length;
+  setStatus(enumeratorStatus, okCount + " / " + results.length + " reachable", okCount ? "ok" : "bad");
+  enumerateBtn.disabled = false;
+});
+
+/* ============================================================
+   PROXY FINGERPRINT
+   ============================================================ */
+const proxyInput = document.getElementById("proxyInput");
+const proxyMode  = document.getElementById("proxyMode");
+const dbCount    = document.getElementById("dbCount");
+const fingerprintBtn = document.getElementById("fingerprintBtn");
+const clearProxyBtn = document.getElementById("clearProxyBtn");
+const proxyStatus = document.getElementById("proxyStatus");
+const proxyOut   = document.getElementById("proxyOut");
+const rawOut     = document.getElementById("rawOut");
+
+let PROXY_DB = null;
+(async () => {
+  PROXY_DB = await loadProxies();
+  if (!PROXY_DB){ dbCount.textContent = "failed to load data/proxies.json"; return; }
+  const count = Array.isArray(PROXY_DB) ? PROXY_DB.length : (Array.isArray(PROXY_DB.proxies) ? PROXY_DB.proxies.length : Object.keys(PROXY_DB).length);
+  dbCount.textContent = "loaded — " + count + " fingerprints";
+  dbCount.style.color = "var(--ok)";
+})();
+
+async function fetchTarget(url, mode){
+  const result = { ok:false, mode, url, status:null, finalUrl:null, title:"", metas:{}, scripts:[], links:[], bodyLength:0, html:null, error:null };
+  try {
+    const res = await fetchWithTimeout(url, 12000, { mode: mode === "cors" ? "cors" : "no-cors" });
+    result.status = res.status; result.finalUrl = res.url || url;
+    if (mode === "cors"){
+      const html = await res.text();
+      result.html = html; result.bodyLength = html.length;
+      parseHtml(html, result); result.ok = true;
+    } else { result.ok = true; }
+  } catch(e){ result.error = e.message; }
+  return result;
+}
+function parseHtml(html, result){
+  const tm = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  if (tm) result.title = decodeEntities(tm[1].trim());
+  const metaRe = /<meta\s+([^>]+)>/gi; let m;
+  while ((m = metaRe.exec(html)) !== null){
+    const attrs = parseAttrs(m[1]);
+    const key = attrs.name || attrs.property || attrs["http-equiv"];
+    if (key && attrs.content) result.metas[key.toLowerCase()] = decodeEntities(attrs.content);
+  }
+  const scriptRe = /<script\s+([^>]+)>/gi;
+  while ((m = scriptRe.exec(html)) !== null){
+    const attrs = parseAttrs(m[1]);
+    if (attrs.src) result.scripts.push(attrs.src);
+  }
+  const linkRe = /<link\s+([^>]+)>/gi;
+  while ((m = linkRe.exec(html)) !== null){
+    const attrs = parseAttrs(m[1]);
+    if (attrs.href) result.links.push({ href: attrs.href, rel: attrs.rel || "", as: attrs.as || "" });
+  }
+}
+function parseAttrs(str){
+  const attrs = {};
+  const re = /([a-zA-Z_:][a-zA-Z0-9_:.\-]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g;
+  let m; while ((m = re.exec(str)) !== null){
+    attrs[m[1].toLowerCase()] = m[2] != null ? m[2] : (m[3] != null ? m[3] : m[4]);
+  }
+  return attrs;
+}
+function decodeEntities(s){
+  if (!s) return s;
+  return s.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g," ");
+}
+
+function matchFingerprint(fp, signals){
+  const elements = fp.targetElements || fp.targets || [];
+  let hits = 0;
+  for (const el of elements){
+    const target = el.target || el.selector || "";
+    if (matchSelector(target, el.content, !!el.substringMatch, signals)) hits++;
+  }
+  return { proxy: fp.proxyName || fp.name || "unknown", hits, total: elements.length };
+}
+function matchSelector(selector, wantContent, isSub, signals){
+  if (/^meta\[/i.test(selector)){
+    const nameM = selector.match(/name\s*=\s*['"]([^'"]+)['"]/i);
+    const propM = selector.match(/property\s*=\s*['"]([^'"]+)['"]/i);
+    const contM = selector.match(/content\s*[*]?=\s*['"]([^'"]+)['"]/i);
+    const key = nameM ? nameM[1] : (propM ? propM[1] : null);
+    let actual = key ? signals.metas[key.toLowerCase()] : null;
+    if (contM && !actual){
+      const wanted = contM[1].toLowerCase();
+      for (const k of Object.keys(signals.metas)){
+        if (signals.metas[k].toLowerCase().includes(wanted)){ actual = signals.metas[k]; break; }
+      }
+    }
+    if (!actual) return false;
+    if (contM) return actual.toLowerCase().includes(contM[1].toLowerCase());
+    return true;
+  }
+  if (/^link\[/i.test(selector)){
+    const relM = selector.match(/rel\s*=\s*['"]([^'"]+)['"]/i);
+    const hrefM = selector.match(/href\s*\*?=\s*['"]([^'"]+)['"]/i);
+    const sub = /href\s*\*=/i.test(selector);
+    for (const link of signals.links){
+      let ok = true;
+      if (relM && (link.rel || "").toLowerCase().indexOf(relM[1].toLowerCase()) === -1) ok = false;
+      if (ok && hrefM){ if (sub ? link.href.indexOf(hrefM[1]) === -1 : link.href !== hrefM[1]) ok = false; }
+      if (ok) return true;
+    }
+    return false;
+  }
+  if (/^script\[/i.test(selector)){
+    const srcM = selector.match(/src\s*\*?=\s*['"]([^'"]+)['"]/i);
+    if (!srcM) return signals.scripts.length > 0;
+    for (const s of signals.scripts){ if (s.indexOf(srcM[1]) !== -1) return true; }
+    return false;
+  }
+  if (selector === "title" || /^title$/i.test(selector)){
+    if (!signals.title) return false;
+    if (wantContent){
+      return isSub ? signals.title.toLowerCase().indexOf(wantContent.toLowerCase()) !== -1
+                   : signals.title === wantContent;
+    }
+    return true;
+  }
+  if (signals.html){
+    const attrM = selector.match(/^([a-zA-Z0-9]+)\[([a-zA-Z\-]+)\s*=\s*['"]([^'"]+)['"]\]$/);
+    if (attrM){
+      const re = new RegExp("<" + attrM[1] + "\\b[^>]*\\b" + attrM[2] + "\\s*=\\s*['\"]" + escapeRe(attrM[3]) + "['\"]", "i");
+      if (re.test(signals.html)) return true;
+    }
+    const idM = selector.match(/^([a-zA-Z0-9]+)?#([a-zA-Z0-9_\-]+)$/);
+    if (idM){
+      const tag = idM[1] || "[a-zA-Z0-9]+";
+      const re = new RegExp("<" + tag + "\\b[^>]*\\bid\\s*=\\s*['\"]" + escapeRe(idM[2]) + "['\"]", "i");
+      if (re.test(signals.html)) return true;
+    }
+    const clM = selector.match(/^([a-zA-Z0-9]+)?\.([a-zA-Z0-9_\-]+)$/);
+    if (clM){
+      const tag = clM[1] || "[a-zA-Z0-9]+";
+      const re = new RegExp("<" + tag + "\\b[^>]*\\bclass\\s*=\\s*['\"][^'\"]*\\b" + escapeRe(clM[2]) + "\\b", "i");
+      if (re.test(signals.html)) return true;
+    }
+    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(selector)){
+      if (new RegExp("<" + selector + "\\b", "i").test(signals.html)) return true;
+    }
+  }
+  return false;
+}
+function escapeRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+fingerprintBtn.addEventListener("click", async () => {
+  const url = proxyInput.value.trim();
+  if (!url){ setStatus(proxyStatus, "Enter a URL first.", "bad"); return; }
+  if (!PROXY_DB){ setStatus(proxyStatus, "Proxy DB not loaded yet.", "warn"); return; }
+  fingerprintBtn.disabled = true;
+  proxyOut.textContent = "Fetching " + url + " …";
+  setStatus(proxyStatus, "Fetching …", "working");
+  const mode = proxyMode.value;
+  const target = await fetchTarget(url, mode);
+  if (!target.ok){
+    proxyOut.innerHTML = "<div class='bad'>Fetch failed: " + escapeHtml(target.error || "unknown") + "</div>";
+    setStatus(proxyStatus, "Fetch failed: " + target.error, "bad");
+    fingerprintBtn.disabled = false; return;
+  }
+  const list = Array.isArray(PROXY_DB) ? PROXY_DB : (Array.isArray(PROXY_DB.proxies) ? PROXY_DB.proxies : []);
+  const matches = [];
+  if (mode === "cors" && target.html){
+    for (const fp of list){
+      const m = matchFingerprint(fp, target);
+      if (m.hits > 0) matches.push(m);
+    }
+    matches.sort((a,b) => b.hits - a.hits);
+  }
+  if (mode === "no-cors"){
+    proxyOut.innerHTML = "<div><strong>URL:</strong> " + escapeHtml(url) + "</div>" +
+      "<div class='warn'>no-cors: opaque response. Reachability confirmed, content not readable.</div>";
+    setStatus(proxyStatus, "Reachable (opaque).", "warn");
+  } else {
+    let html = "";
+    html += "<div><strong>URL:</strong> " + escapeHtml(url) + "</div>";
+    html += "<div><strong>Title:</strong> " + escapeHtml(target.title || "(none)") + "</div>";
+    html += "<div><strong>Body length:</strong> " + target.bodyLength + " bytes</div><hr/>";
+    if (!matches.length) html += "<div class='muted'>No known proxy fingerprints matched.</div>";
+    else for (const m of matches){
+      const conf = Math.round((m.hits/m.total)*100);
+      const cls = conf >= 75 ? "bad" : (conf >= 50 ? "warn" : "muted");
+      html += "<div class='" + cls + "'>Matched: <strong>" + escapeHtml(m.proxy) + "</strong> (" + m.hits + "/" + m.total + " — " + conf + "%)</div>";
+    }
+    proxyOut.innerHTML = html;
+    setStatus(proxyStatus, matches.length + " match(es).", matches.length ? "ok" : "warn");
+  }
+  rawOut.textContent =
+    "Title: " + (target.title || "(none)") + "\n\n" +
+    "Meta tags:\n" + JSON.stringify(target.metas, null, 2) + "\n\n" +
+    "Scripts:\n" + (target.scripts.join("\n") || "(none)") + "\n\n" +
+    "Links:\n" + (target.links.map(l => l.href).join("\n") || "(none)");
+  fingerprintBtn.disabled = false;
+});
+clearProxyBtn.addEventListener("click", () => {
+  proxyInput.value = ""; proxyOut.textContent = "No results yet."; rawOut.textContent = "(none yet)";
+  setStatus(proxyStatus, "Ready.", "muted");
+});
+
+/* ============================================================
+   REFERENCE
+   ============================================================ */
+const searchInput = document.getElementById("searchInput");
+const taxSelect   = document.getElementById("taxSelect");
+const loadManifestBtn = document.getElementById("loadManifestBtn");
+const loadAllTaxBtn = document.getElementById("loadAllTaxBtn");
+const clearRefBtn = document.getElementById("clearRefBtn");
+const refStatus   = document.getElementById("refStatus");
+const refOut      = document.getElementById("refOut");
+let LOADED_REF = {};
+
+function normalizeTaxonomy(data){
+  const rows = [];
+  if (Array.isArray(data)){
+    for (const item of data){
+      if (Array.isArray(item)) rows.push({ num:item[0], name:String(item[1]), flag:item[2] });
+      else if (item && typeof item === "object"){
+        if ("CategoryNumber" in item) rows.push({ num:item.CategoryNumber, name:item.CategoryName || item.name || String(item.CategoryNumber), flag:item.Allow === "0" || item.Allow === 0 || item.blocked === true });
+        else if ("category_number" in item) rows.push({ num:item.category_number, name:item.name || item.category || String(item.category_number), flag:item.blocked });
+        else if ("num" in item && "name" in item) rows.push({ num:item.num, name:item.name, flag:item.blocked });
+      }
+    }
+  } else if (data && typeof data === "object"){
+    if (data.web) for (const k of Object.keys(data.web)){
+      const v = data.web[k]; rows.push({ num: v.num != null ? v.num : k, name: (v.cat ? v.cat + " / " : "") + (v.name || ""), flag: v.blocked });
+    }
+    if (data.ai) for (const k of Object.keys(data.ai)){
+      const v = data.ai[k]; rows.push({ num: v.num != null ? v.num : k, name: "[ai] " + (v.cat ? v.cat + " / " : "") + (v.name || ""), flag: v.blocked });
+    }
+    if (!data.web && !data.ai) for (const k of Object.keys(data)){
+      const v = data[k];
+      if (Array.isArray(v)) rows.push({ num:k, name:String(v[0]), flag:v[1] });
+      else if (v && typeof v === "object") rows.push({ num:k, name: v.category || v.name || JSON.stringify(v), flag: v.blocked });
+      else rows.push({ num:k, name:String(v), flag:null });
+    }
+  }
+  return rows;
+}
+function renderRef(){
+  const q = searchInput.value.trim().toLowerCase();
+  const active = taxSelect.value;
+  const keys = active ? [active] : Object.keys(LOADED_REF);
+  if (!keys.length){ refOut.textContent = "No taxonomy loaded."; return; }
+  let html = "";
+  for (const key of keys){
+    const data = LOADED_REF[key]; if (!data) continue;
+    const rows = normalizeTaxonomy(data).filter(r =>
+      !q || String(r.num).toLowerCase().includes(q) || String(r.name).toLowerCase().includes(q)
+    );
+    html += "<div style='color:var(--accent);font-weight:bold;margin-top:8px;'>▸ " + escapeHtml(key) + " (" + rows.length + ")</div>";
+    for (const r of rows){
+      html += "<div style='display:flex;gap:10px;padding:1px 0;'>";
+      html += "<span class='muted' style='min-width:60px;text-align:right'>" + escapeHtml(String(r.num)) + "</span>";
+      html += "<span style='flex:1'>" + escapeHtml(r.name) + "</span>";
+      if (r.flag != null) html += "<span class='" + (r.flag ? "bad" : "ok") + "'>" + (r.flag ? "blocked" : "allowed") + "</span>";
+      html += "</div>";
+    }
+  }
+  refOut.innerHTML = html;
+}
+loadManifestBtn.addEventListener("click", async () => {
+  loadManifestBtn.disabled = true;
+  setStatus(refStatus, "Loading manifest …", "working");
+  const m = await loadManifest();
+  if (!m){ setStatus(refStatus, "Failed to load manifest.", "bad"); loadManifestBtn.disabled = false; return; }
+  taxSelect.innerHTML = '<option value="">(all loaded)</option>';
+  for (const key of Object.keys(m)){
+    const opt = document.createElement("option");
+    opt.value = key; opt.textContent = key; taxSelect.appendChild(opt);
+  }
+  setStatus(refStatus, Object.keys(m).length + " taxonomies available.", "ok");
+  loadManifestBtn.disabled = false;
+});
+loadAllTaxBtn.addEventListener("click", async () => {
+  loadAllTaxBtn.disabled = true;
+  const m = await loadManifest();
+  if (!m){ setStatus(refStatus, "Failed to load manifest.", "bad"); loadAllTaxBtn.disabled = false; return; }
+  let ok = 0;
+  for (const key of Object.keys(m)){
+    setStatus(refStatus, "Loading " + key + " … (" + ok + "/" + Object.keys(m).length + ")", "working");
+    const data = await loadTaxonomy(key);
+    if (data){ LOADED_REF[key] = data; ok++; }
+  }
+  setStatus(refStatus, "Loaded " + ok + "/" + Object.keys(m).length + ".", ok ? "ok" : "bad");
+  renderRef();
+  loadAllTaxBtn.disabled = false;
+});
+taxSelect.addEventListener("change", async () => {
+  const key = taxSelect.value;
+  if (key && !LOADED_REF[key]){
+    setStatus(refStatus, "Loading " + key + " …", "working");
+    const data = await loadTaxonomy(key);
+    if (data){ LOADED_REF[key] = data; setStatus(refStatus, "Loaded " + key, "ok"); }
+    else setStatus(refStatus, "Failed to load " + key, "bad");
+  }
+  renderRef();
+});
+searchInput.addEventListener("input", renderRef);
+clearRefBtn.addEventListener("click", () => {
+  LOADED_REF = {}; taxSelect.innerHTML = '<option value="">(click Load Manifest)</option>';
+  searchInput.value = ""; refOut.textContent = "No taxonomy loaded.";
+  setStatus(refStatus, "Cleared.", "muted");
+});
+
+/* ============================================================
+   SIMULATOR
+   ============================================================ */
+const simInput = document.getElementById("simInput");
+const simTax   = document.getElementById("simTax");
+const observedInput = document.getElementById("observedInput");
+const policySelect = document.getElementById("policySelect");
+const simBtn   = document.getElementById("simBtn");
+const clearSimBtn = document.getElementById("clearSimBtn");
+const simStatus = document.getElementById("simStatus");
+const simOut   = document.getElementById("simOut");
+
+const RULES = [
+  { match:/(e621|e926|furaffinity|furry|yiff|e6ai|inkbunny|sofurry|f-list|fchan)/i, category:"porn / adult", note:"Furry ecosystem — almost always blocked." },
+  { match:/(porn|xxx|nsfw|hentai|nude|sex|adult)/i, category:"porn / adult", note:"Explicit keyword." },
+  { match:/(roblox|poki|crazygames|newgrounds|kongregate|miniclip|itch\.io|coolmath)/i, category:"games", note:"Game hosting." },
+  { match:/(steam|steamcommunity|store\.steampowered|epicgames)/i, category:"games / shopping", note:"Game store." },
+  { match:/(discord|twitch|gamejolt)/i, category:"games / chat", note:"Gaming-adjacent platforms." },
+  { match:/(youtube|netflix|hulu|disney|vimeo|dailymotion|spotify|soundcloud|crunchyroll)/i, category:"audio-video / streaming", note:"Streaming platform." },
+  { match:/(twitter|x\.com|facebook|instagram|tiktok|snapchat|reddit|discord|telegram|whatsapp|messenger|tumblr|pinterest|linkedin|mastodon|bsky)/i, category:"forums.social_networking", note:"Social platform." },
+  { match:/(chatgpt|claude|gemini|perplexity|character\.ai|poe\.com|you\.com|midjourney|civitai|leonardo|openart|anthropic|openai)/i, category:"artificial-intelligence", note:"AI service." },
+  { match:/(proxy|corsproxy|12ft|thingproxy|allorigins|r\.jina|rammerhead)/i, category:"security.proxy", note:"Proxy or CORS bypass." },
+  { match:/(google|bing|yahoo|duckduckgo|search)/i, category:"search", note:"Search engine." },
+  { match:/(github|gitlab|codeberg|bitbucket|stackoverflow|stackexchange|quora|medium)/i, category:"computers / education", note:"Code hosting / Q&A." },
+  { match:/(npmjs|jsdelivr|unpkg|esm\.sh|cdnjs)/i, category:"computers / cdn", note:"Package / CDN." },
+  { match:/(wikipedia|archive|khanacademy|canvas|desmos|wolfram|schoology|quizlet|brainly|classroom|docs\.google|drive\.google)/i, category:"education", note:"Education tool." },
+  { match:/(amazon|ebay|etsy|walmart|target)/i, category:"shopping", note:"Shopping." },
+  { match:/(pizza|burger|tacobell|mcdonalds|food|doordash|grubhub|ubereats)/i, category:"family.food", note:"Food delivery / restaurant." },
+  { match:/(fanfiction|archiveofourown|wattpad|fandom|tvtropes|myanimelist|anilist|bulbapedia)/i, category:"entertainment / forums", note:"Fandom." },
+  { match:/(cnn|bbc|nytimes|reuters|apnews|npr)/i, category:"news", note:"News site." },
+  { match:/(gov|\.mil|state\.[a-z]{2}\.us)/i, category:"government", note:"Government." }
+];
+const POLICIES = {
+  strict: { label:"Strict", blockedSubstrings:["porn","adult","sex","mature","gambling","games","violence","hate","weapons","drugs","alcohol","tobacco","marijuana","proxy","hacking","warez","malware","phishing","spam","suspicious","dating","chat","social","streaming","audio","video","entertainment","forums"] },
+  moderate:{ label:"Moderate", blockedSubstrings:["porn","adult","sex","mature","gambling","violence","hate","weapons","drugs","alcohol","tobacco","marijuana","proxy","hacking","warez","malware","phishing","dating"] },
+  permissive:{ label:"Permissive", blockedSubstrings:["porn","adult","sex","mature","malware","phishing"] }
+};
+function stripProtocol(d){ let s = String(d).trim().toLowerCase(); s = s.replace(/^https?:\/\//i,""); s = s.split("/")[0].split("?")[0].split("#")[0]; return s; }
+function guessCategory(domain){ for (const r of RULES) if (r.match.test(domain)) return { category:r.category, note:r.note }; return { category:"general / not reviewed", note:"No pattern matched." }; }
+function policyFor(category, key){
+  const p = POLICIES[key] || POLICIES.moderate;
+  const c = category.toLowerCase();
+  for (const s of p.blockedSubstrings) if (c.indexOf(s) !== -1) return { blocked:true, reason:"Block substring '" + s + "'", profile:p.label };
+  return { blocked:false, reason:"No block substring matched", profile:p.label };
+}
+simBtn.addEventListener("click", async () => {
+  const raw = simInput.value.trim();
+  if (!raw){ setStatus(simStatus, "Enter a domain first.", "bad"); return; }
+  const domain = stripProtocol(raw);
+  const observed = observedInput.value.trim();
+  const policyKey = policySelect.value;
+  const taxKey = simTax.value;
+  const guess = guessCategory(domain);
+  const policy = policyFor(guess.category, policyKey);
+  let verdictSource = "heuristic", finalVerdict = policy.blocked;
+  if (observed){
+    verdictSource = "observed";
+    const up = observed.toUpperCase();
+    if (up.includes("UNBLOCK") || up.includes("ALLOW")) finalVerdict = false;
+    else if (up.includes("BLOCK") || up.includes("DNS") || up.includes("EXTENSION") || up.includes("TIMEOUT")) finalVerdict = true;
+  }
+  let taxMatches = [];
+  if (taxKey && LOADED_REF[taxKey]){
+    const rows = normalizeTaxonomy(LOADED_REF[taxKey]);
+    const needles = guess.category.split(/[\/\s]+/).filter(x => x.length > 2);
+    for (const row of rows){
+      const lower = row.name.toLowerCase();
+      for (const n of needles) if (lower.indexOf(n) !== -1){ taxMatches.push(row); break; }
+    }
+  }
+  let html = "";
+  html += "<div><strong>Domain:</strong> <span class='ok'>" + escapeHtml(domain) + "</span></div>";
+  html += "<div><strong>Guess category:</strong> <span class='info'>" + escapeHtml(guess.category) + "</span></div>";
+  if (guess.note) html += "<div><strong>Rule note:</strong> <span class='muted'>" + escapeHtml(guess.note) + "</span></div>";
+  html += "<div><strong>Verdict:</strong> <span class='" + (finalVerdict ? "bad" : "ok") + "'><strong>" +
+    (finalVerdict ? "BLOCKED" : "ALLOWED") + "</strong></span> (source: " + escapeHtml(verdictSource) + ")</div>";
+  html += "<div><strong>Policy:</strong> " + escapeHtml(policy.profile) + "</div>";
+  if (verdictSource === "heuristic") html += "<div class='muted'>" + escapeHtml(policy.reason) + "</div>";
+  if (observed) html += "<div><strong>Observed:</strong> <span class='warn'>" + escapeHtml(observed) + "</span></div>";
+  if (taxMatches.length){
+    html += "<hr/><div><strong>Taxonomy (" + escapeHtml(taxKey) + "):</strong></div>";
+    for (const m of taxMatches.slice(0, 15)){
+      html += "<div style='display:flex;gap:10px;'><span class='muted' style='min-width:60px;text-align:right'>" +
+        escapeHtml(String(m.num)) + "</span><span>" + escapeHtml(m.name) + "</span></div>";
+    }
+  }
+  html += "<div class='muted' style='margin-top:10px;font-size:11px'>Local-only. No network calls made.</div>";
+  simOut.innerHTML = html;
+  setStatus(simStatus, "Simulated: " + (finalVerdict ? "BLOCKED" : "ALLOWED"), "ok");
+});
+clearSimBtn.addEventListener("click", () => {
+  simInput.value = ""; observedInput.value = ""; simOut.textContent = "No simulation yet.";
+  setStatus(simStatus, "Ready.", "muted");
+});
+
+/* ============================================================
+   PRE-WARM MANIFEST + POPULATE SIM DROPDOWN
+   ============================================================ */
+(async () => {
+  const m = await loadManifest();
+  if (!m) return;
+  for (const key of Object.keys(m)){
+    const opt = document.createElement("option");
+    opt.value = key; opt.textContent = key;
+    simTax.appendChild(opt);
+  }
+})();
+</script>
+</body>
+</html>
